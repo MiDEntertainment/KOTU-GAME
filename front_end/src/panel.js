@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function fetchPlayerUsername(twitchUserId) {
         console.log(`🔍 Fetching player username for Twitch ID: ${twitchUserId}`);
 
-        fetch(`http://localhost:8080/api/player/${twitchUserId}`)
+        fetch(`https://localhost:8080/api/player/${twitchUserId}`)
             .then(response => {
                 console.log("🛠 Player API Response:", response);
                 if (!response.ok) {
@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function fetchPlayerStats(username) {
         console.log(`🔍 Fetching stats for player: ${username}`);
 
-        fetch(`http://localhost:8080/api/player/${username}/stats`)
+        fetch(`https://localhost:8080/api/player/${username}/stats`)
             .then(response => {
                 console.log("🛠 Stats API Response:", response);
                 if (!response.ok) {

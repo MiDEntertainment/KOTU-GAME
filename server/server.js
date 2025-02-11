@@ -1,6 +1,8 @@
 // Import necessary modules
 const express = require('express');
 const cors = require('cors');
+const fs = require('fs');
+const https = require('https');
 require('dotenv').config();
 const { Pool } = require('pg');
 const playerRoutes = require('./routes/playerRoutes'); // Import player routes
@@ -9,8 +11,13 @@ const playerRoutes = require('./routes/playerRoutes'); // Import player routes
 const app = express();
 const port = process.env.PORT || 8080;
 
-// Middleware
-app.use(cors());           
+const corsOptions = {
+    origin: "*", // Allow all origins (for testing)
+    methods: "GET,POST",
+    allowedHeaders: "Content-Type,Authorization"
+};
+
+app.use(cors(corsOptions));          
 app.use(express.json());  
 
 // PostgreSQL Database Connection
@@ -28,9 +35,15 @@ app.use((req, res, next) => {
 // Attach routes
 app.use('/api', playerRoutes);
 
-// Start Server
-app.listen(port, () => {
-    console.log(`✅ Server running at http://localhost:${port}/`);
+// ✅ Load the PFX certificate with the password
+const sslOptions = {
+    pfx: fs.readFileSync('D:/KOTU-Game/ssl/server.pfx'),
+    passphrase: "testpassword"  // Use the password you set during export
+};
+
+// ✅ Start HTTPS Server
+https.createServer(sslOptions, app).listen(port, () => {
+    console.log(`✅ Secure Server running at https://localhost:${port}/`);
 });
 
 module.exports = app;
