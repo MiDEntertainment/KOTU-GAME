@@ -1,3 +1,5 @@
+const API_BASE_URL = "http://kotu-game.onrender.com/";
+
 document.addEventListener("DOMContentLoaded", function () {
     console.log("✅ panel.js Loaded"); // 🔍 Debug log to check if script runs
 
@@ -5,31 +7,26 @@ document.addEventListener("DOMContentLoaded", function () {
     const DEFAULT_TEST_PLAYER = "quietgamergirl"; // ✅ Hardcoded test player CHANGE TO LOGGED IN PLAYER
 
     function fetchPlayerUsername(twitchUserId) {
-        console.log(`🔍 Fetching player username for Twitch ID: ${twitchUserId}`);
-
-        fetch(`https://localhost:8080/api/player/${twitchUserId}`)
+        fetch(`${API_BASE_URL}/api/player/${twitchUserId}`)
             .then(response => {
-                console.log("🛠 Player API Response:", response);
+                console.log("🛠 Username API Response:", response);
                 if (!response.ok) {
-                    throw new Error('Player not found');
+                    throw new Error("Player not found");
                 }
                 return response.json();
             })
             .then(playerData => {
-                console.log("✅ Player Data:", playerData);
                 document.getElementById("player-username").textContent = playerData.twitch_username;
                 fetchPlayerStats(playerData.twitch_username);
             })
             .catch(error => {
                 console.error("❌ Error fetching player:", error);
-                document.getElementById("player-username").textContent = "Player Not Found";
             });
     }
-
     function fetchPlayerStats(username) {
         console.log(`🔍 Fetching stats for player: ${username}`);
 
-        fetch(`https://localhost:8080/api/player/${username}/stats`)
+        fetch(`${API_BASE_URL}/${username}/stats`)
             .then(response => {
                 console.log("🛠 Stats API Response:", response);
                 if (!response.ok) {
