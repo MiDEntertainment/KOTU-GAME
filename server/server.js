@@ -40,7 +40,7 @@ app.use('/api', playerRoutes);
 if (process.env.RENDER) {
     console.log("🚀 Running on Render: Using HTTP (Render provides HTTPS automatically)");
     http.createServer(app).listen(port, () => {
-        console.log(`✅ Server running at http://localhost:${port}/`);
+        console.log(`✅ Server running on render`);
     });
 } else {
     console.log("🔒 Running Locally: Using HTTPS with self-signed certificate");
