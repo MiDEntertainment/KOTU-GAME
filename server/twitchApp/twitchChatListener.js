@@ -49,7 +49,11 @@ async function startTwitchChatListener() {
             console.log(`💬 ${user}: ${message}`);
             if (message.startsWith('!')) {
                 console.log(`🔹 Detected command: ${message}`);
-                // Handle chat commands here
+                
+                if (message.toLowerCase() === '!play') {
+                    console.log(`🎮 ${user} used !play command. Sending welcome message...`);
+                    chatClient.say(channel, `Welcome to the game, @${user}!`);
+                }
             }
         });
 
