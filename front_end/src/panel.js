@@ -19,7 +19,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 console.log("✅ Player Data Received:", playerData);
 
                 // ✅ Update Player Name
-                document.getElementById("player-username").textContent = playerData.twitch_username ?? "N/A";
+                document.getElementById("player-username").textContent = twitchUserId ?? "N/A";
 
                 // ✅ Update Stats
                 document.getElementById("health").textContent = playerData.health ?? "N/A";
