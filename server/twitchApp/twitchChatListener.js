@@ -11,6 +11,14 @@ const accessToken = process.env.TWITCH_ACCESS_TOKEN;
 const botUsername = process.env.TWITCH_BOT_USERNAME;
 const channelName = process.env.TWITCH_CHANNEL_NAME;
 
+async function handleSkillRedemption(chatClient, userName, skillType, itemType) {
+    try {
+        const resultMessage = await skillAttempt(userName, skillType, itemType);
+        chatClient.say(`#${channelName}`, `@${userName}, ${resultMessage}`);
+    } catch (error) {
+        console.error(`❌ Error processing skill attempt for ${userName}:`, error);
+    }
+}
 
 async function startTwitchChatListener() {
     try {
@@ -35,16 +43,11 @@ async function startTwitchChatListener() {
         // **EventSub WebSocket Listener for Channel Point Redemptions**
         const listener = new EventSubWsListener({ apiClient });
         listener.onChannelRedemptionAdd(userId, async (e) => {
-            try {
-                if (e.rewardTitle.toLowerCase() === 'fish') {                  
-                    // Call skillAttempt and wait for the result
-                    const resultMessage = await skillAttempt(e.userName, 'fishing_skills', 'Fish');
-                    
-                    // Send result to chat
-                    chatClient.say(`#${channelName}`, `@${e.userName}, ${resultMessage}`);
-                }
-            } catch (error) {
-                console.error(`❌ Error handling redemption:`, error);
+            const rewardTitle = e.rewardTitle.toLowerCase();
+            if (rewardTitle === 'fish') {
+                handleSkillRedemption(chatClient, e.userName, 'fishing_skills', 'Fish');
+            } else if (rewardTitle === 'hunt') {
+                handleSkillRedemption(chatClient, e.userName, 'hunting_skills', 'Animal');
             }
         });
 
@@ -67,7 +70,6 @@ async function startTwitchChatListener() {
     } catch (error) {
         console.error('❌ Error starting Twitch chat listener:', error);
     }
-    
 }
 
 module.exports = { startTwitchChatListener };

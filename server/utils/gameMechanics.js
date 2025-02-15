@@ -87,7 +87,7 @@ async function skillAttempt(username, skillType, itemType) {
              WHERE p.twitch_username = $1`, [username]
         );
 
-        if (result.rows.length === 0) return `❌ Player not found.`;
+        if (result.rows.length === 0) return `❌ Player not found. To register your player enter !play in chat`;
         
         const { player_id, current_objective } = result.rows[0];
         const skillLevel = result.rows[0][skillType];
