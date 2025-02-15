@@ -60,7 +60,7 @@ if (process.env.RENDER) {
     });
 }
 
-pool.query('SELECT NOW()', (err, res) => {
+global.db.query('SELECT NOW()', (err, res) => {
     if (err) {
         console.error("❌ Database Connection Error:", err);
     } else {
