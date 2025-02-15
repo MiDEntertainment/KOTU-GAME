@@ -1,5 +1,3 @@
-const { pool } = require('../server'); // ✅ Import shared database pool
-
 /**
  * Determines the probability of success based on the player's skill level.
  * @param {number} skillLevel - The player's skill level.
@@ -28,7 +26,7 @@ function skillProbability(skillLevel) {
  * @returns {Promise<object|null>} - Selected item or null if none found.
  */
 async function itemSelection(itemType, location) {
-    const result = await pool.query(
+    const result = await global.db.query(
         `SELECT * FROM items 
          WHERE item_type = $1 
          AND (item_location = 0 OR item_location = $2) 
@@ -46,7 +44,7 @@ async function itemSelection(itemType, location) {
  * @param {string} itemName - The name of the item.
  */
 async function inventoryUpdate(playerId, itemName) {
-    await pool.query(
+    await global.db.query(
         `INSERT INTO inventory (player_id, item_name, quantity)
          VALUES ($1, $2, 1)
          ON CONFLICT (player_id, item_name) DO UPDATE 
@@ -61,7 +59,7 @@ async function inventoryUpdate(playerId, itemName) {
  * @param {string} skillType - The skill column to update.
  */
 async function updateSkillLevel(playerId, skillType) {
-    await pool.query(`UPDATE player_stats SET ${skillType} = ${skillType} + 1 WHERE player_id = $1`, [playerId]);
+    await global.db.query(`UPDATE player_stats SET ${skillType} = ${skillType} + 1 WHERE player_id = $1`, [playerId]);
 }
 
 /**
@@ -73,7 +71,7 @@ async function updateSkillLevel(playerId, skillType) {
  */
 async function skillAttempt(username, skillType, itemType) {
     try {
-        const result = pool.query(
+        const result = await global.db.query(
             `SELECT ps.${skillType}, ps.current_objective, p.player_id 
              FROM player_stats ps 
              JOIN player p ON ps.player_id = p.player_id 
@@ -86,7 +84,7 @@ async function skillAttempt(username, skillType, itemType) {
         const skillLevel = result.rows[0][skillType];
         
         if (!skillProbability(skillLevel)) {
-            return `You failed to catch anything this time.`;
+            return `❌ You failed to catch anything this time.`;
         }
         
         const item = await itemSelection(itemType, current_objective);
