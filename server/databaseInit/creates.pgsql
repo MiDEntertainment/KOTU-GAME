@@ -28,11 +28,12 @@ CREATE TABLE IF NOT EXISTS ranks (
 );
 
 CREATE TABLE IF NOT EXISTS inventory (
-    inventory_id SERIAL PRIMARY KEY,       -- Unique identifier for each inventory record
-    player_id INTEGER NOT NULL,            -- Foreign key linking to Players table
-    item_name TEXT NOT NULL,               -- Name of the item
-    quantity INTEGER DEFAULT 1,            -- Quantity of the item (default 1)
-    FOREIGN KEY (player_id) REFERENCES player(player_id) ON DELETE CASCADE -- Cascade delete
+    inventory_id SERIAL PRIMARY KEY,
+    player_id INTEGER NOT NULL,
+    item_name TEXT NOT NULL,
+    quantity INTEGER DEFAULT 1,
+    UNIQUE (player_id, item_name), -- ✅ Ensures each player can only have one row per item
+    FOREIGN KEY (player_id) REFERENCES player(player_id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS locations (

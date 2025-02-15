@@ -22,17 +22,22 @@ const corsOptions = {
 app.use(cors(corsOptions));          
 app.use(express.json());  
 
-// PostgreSQL Database Connection
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL, 
-    ssl: { rejectUnauthorized: false } 
-});
-
 // ✅ Make `pool` available to routes
 app.use((req, res, next) => {
     req.db = pool;
     next();
 });
+
+// ✅ Initialize Database Pool Globally
+global.db = new Pool({
+    connectionString: process.env.DATABASE_URL, 
+    ssl: { rejectUnauthorized: false }
+});
+
+global.db.connect()
+    .then(() => console.log("✅ Global Database Connection Established"))
+    .catch(err => console.error("❌ Database Connection Error:", err));
+
 
 // Attach routes
 app.use('/api', playerRoutes);
@@ -54,6 +59,7 @@ if (process.env.RENDER) {
         console.log(`✅ Secure Server running at https://localhost:${port}/`);
     });
 }
+
 
 module.exports = app;
 
