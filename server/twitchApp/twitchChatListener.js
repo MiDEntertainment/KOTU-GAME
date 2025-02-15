@@ -35,9 +35,12 @@ async function startTwitchChatListener() {
         const listener = new EventSubWsListener({ apiClient });
         listener.onChannelRedemptionAdd(userId, async (e) => {
             try {
-                if (e.rewardTitle.toLowerCase() === 'fish') {
-                    console.log(`🎣 ${e.userName} redeemed Fish! Sending message...`);
-                    chatClient.say(`#${channelName}`, `Hey @${e.userName}, you are fishing! 🎣`);
+                if (e.rewardTitle.toLowerCase() === 'fish') {                  
+                    // Call skillAttempt and wait for the result
+                    const resultMessage = await skillAttempt(e.userName, 'fishing_skills', 'Fish');
+                    
+                    // Send result to chat
+                    chatClient.say(`#${channelName}`, `@${e.userName}, ${resultMessage}`);
                 }
             } catch (error) {
                 console.error(`❌ Error handling redemption:`, error);

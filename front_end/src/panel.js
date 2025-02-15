@@ -1,12 +1,8 @@
 document.addEventListener("DOMContentLoaded", function () {
-    console.log("✅ panel.js Loaded");
-
     let twitch = window.Twitch.ext;
     const API_BASE_URL = "https://kotu-game.onrender.com"; // ✅ Hosted backend
 
     function fetchPlayerData(twitchUserId) {
-        console.log(`🔍 Fetching player data for Twitch ID: ${twitchUserId}`);
-
         fetch(`${API_BASE_URL}/api/player/${twitchUserId}/stats`)
             .then(response => {
                 console.log("🛠 API Response:", response);
@@ -16,8 +12,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 return response.json();
             })
             .then(playerData => {
-                console.log("✅ Player Data Received:", playerData);
-
                 // ✅ Update Player Name
                 document.getElementById("player-username").textContent = twitchUserId ?? "N/A";
 
@@ -39,6 +33,5 @@ document.addEventListener("DOMContentLoaded", function () {
             });
     }
 
-    console.log("🔄 Running Panel.js Script...");
     fetchPlayerData("quietgamergirl"); // Replace with Twitch auth later
 });
