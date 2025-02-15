@@ -21,7 +21,6 @@ async function getPlayerId(req, username) {
 router.get('/player/:username', async (req, res) => {
     try {
         const { username } = req.params;
-        console.log(`🔍 Fetching player: ${username}`);
 
         const result = await req.db.query('SELECT * FROM player WHERE twitch_username = $1', [username]);
 
@@ -42,7 +41,6 @@ router.get('/player/:username', async (req, res) => {
 router.get('/player/:username/stats', async (req, res) => {
     try {
         const { username } = req.params;
-        console.log(`🔍 Fetching stats for player: ${username}`);
 
         // ✅ Use helper function to get player ID
         const playerId = await getPlayerId(req, username);

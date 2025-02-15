@@ -7,6 +7,7 @@ const db= new Pool({
     ssl: { rejectUnauthorized: false } 
 });
 
+//START METHOD SKILLATTEMPT AND ITS HELPERS
 /**
  * Determines the probability of success based on the player's skill level.
  * @param {number} skillLevel - The player's skill level.
@@ -43,7 +44,6 @@ async function itemSelection(itemType, location) {
     );
     
     const selectedItem = result.rows[0] || null;
-    console.log(`🎣 Item Selected:`, selectedItem);
     return selectedItem;
 }
 
