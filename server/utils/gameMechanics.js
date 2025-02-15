@@ -14,7 +14,7 @@ const db= new Pool({
  * @returns {boolean} - True if successful, false if failed.
  */
 function skillProbability(skillLevel) {
-    const probabilities = [25, 50, 75, 99];
+    const probabilities = [35, 50, 75, 99];
     let threshold;
     
     if (skillLevel <= 25) threshold = probabilities[0];
