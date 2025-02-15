@@ -64,6 +64,7 @@ pool.query('SELECT NOW()', (err, res) => {
 });
 
 
-module.exports = app;
+// ✅ Make `pool` available for imports
+module.exports = { app, pool };
 
 startTwitchChatListener();
