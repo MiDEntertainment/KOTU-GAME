@@ -51,6 +51,8 @@ async function startTwitchChatListener() {
                 handleSkillRedemption(chatClient, e.userName, 'fishing_skills', 'Fish');
             } else if (rewardTitle === 'hunt') {
                 handleSkillRedemption(chatClient, e.userName, 'hunting_skills', 'Animal');
+            } else if (rewardTitle === 'search') {
+                handleSkillRedemption(chatClient, e.userName, 'searching_skills', 'iQuest');
             }
         });
 

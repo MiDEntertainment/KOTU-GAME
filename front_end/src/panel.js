@@ -23,8 +23,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 document.getElementById("fishing_skills").textContent = playerData.fishing_skills ?? "N/A";
                 document.getElementById("hunting_skills").textContent = playerData.hunting_skills ?? "N/A";
                 document.getElementById("searching_skills").textContent = playerData.searching_skills ?? "N/A";
-                document.getElementById("capacity").textContent = playerData.capacity ?? "N/A";
-                document.getElementById("current_objective").textContent = playerData.current_objective ?? "N/A";
+                document.getElementById("current_location").textContent = playerData.current_location ?? "N/A";
                 document.getElementById("current_rank").textContent = playerData.current_rank ?? "N/A";
             })
             .catch(error => {

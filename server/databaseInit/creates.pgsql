@@ -14,8 +14,7 @@ CREATE TABLE IF NOT EXISTS player_stats (
     fishing_skills INTEGER DEFAULT 0,          -- Fishing skill level
     hunting_skills INTEGER DEFAULT 0,          -- Hunting skill level
     searching_skills INTEGER DEFAULT 0,        -- Scouting skill level
-    capacity INTEGER DEFAULT 99,               -- Inventory capacity
-    current_objective INTEGER DEFAULT 1,       -- Current objective the player is on
+    current_location INTEGER DEFAULT 1,       -- Current objective the player is on
     current_rank INTEGER DEFAULT 1,            -- Default to the lowest rank
     FOREIGN KEY (player_id) REFERENCES player(player_id) ON DELETE CASCADE
 );

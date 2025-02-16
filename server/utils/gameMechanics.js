@@ -79,18 +79,48 @@ async function itemSelection(itemType, location) {
 }
 
 /**
- * Updates the player's inventory, adding an item if it doesn't exist.
+ * Updates the player's inventory, ensuring the item quantity does not exceed the item's limit.
  * @param {number} playerId - The player's ID.
  * @param {string} itemName - The name of the item.
  */
 async function inventoryUpdate(playerId, itemName) {
-    await db.query(
-        `INSERT INTO inventory (player_id, item_name, quantity)
-         VALUES ($1, $2, 1)
-         ON CONFLICT (player_id, item_name) DO UPDATE 
-         SET quantity = inventory.quantity + 1`,
-        [playerId, itemName]
-    );
+    try {
+        // Get the item's limit and current quantity in player's inventory
+        const result = await db.query(
+            `SELECT 
+                i.item_limit, 
+                COALESCE(inv.quantity, 0) AS current_quantity
+             FROM items i
+             LEFT JOIN inventory inv ON i.item_name = inv.item_name AND inv.player_id = $1
+             WHERE i.item_name = $2`,
+            [playerId, itemName]
+        );
+
+        if (result.rows.length === 0) {
+            console.error(`❌ Item '${itemName}' not found in the items table.`);
+            return;
+        }
+
+        const { item_limit, current_quantity } = result.rows[0];
+
+        // Ensure adding another item doesn't exceed the item_limit
+        if (current_quantity >= item_limit) {
+            console.log(`⚠️ Player ${playerId} cannot carry more '${itemName}' (limit: ${item_limit}).`);
+            return;
+        }
+
+        // Update inventory with new quantity
+        await db.query(
+            `UPDATE inventory 
+             SET quantity = quantity + 1 
+             WHERE player_id = $1 AND item_name = $2`,
+            [playerId, itemName]
+        );
+
+        console.log(`✅ Added ${itemName} to player ${playerId}'s inventory.`);
+    } catch (error) {
+        console.error(`❌ Error updating inventory for player ${playerId}:`, error);
+    }
 }
 
 /**
@@ -112,7 +142,7 @@ async function updateSkillLevel(playerId, skillType) {
 async function skillAttempt(username, skillType, itemType) {
     try {
         const result = await db.query(
-            `SELECT ps.${skillType}, ps.current_objective, p.player_id 
+            `SELECT ps.${skillType}, ps.current_location, p.player_id 
              FROM player_stats ps 
              JOIN player p ON ps.player_id = p.player_id 
              WHERE p.twitch_username = $1`, [username]
@@ -120,14 +150,14 @@ async function skillAttempt(username, skillType, itemType) {
 
         if (result.rows.length === 0) return `❌ Player not found. To register your player enter !play in chat`;
         
-        const { player_id, current_objective } = result.rows[0];
+        const { player_id, current_location } = result.rows[0];
         const skillLevel = result.rows[0][skillType];
         
         if (!skillProbability(skillLevel)) {
             return `❌ You failed to catch anything this time.`;
         }
         
-        const item = await itemSelection(itemType, current_objective);
+        const item = await itemSelection(itemType, current_location);
         if (!item) return `❌ No valid items found.`;
         
         await inventoryUpdate(player_id, item.item_name);
