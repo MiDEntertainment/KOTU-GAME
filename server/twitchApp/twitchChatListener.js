@@ -55,14 +55,15 @@ async function startTwitchChatListener() {
         });
 
         // Listen for chat messages
-        chatClient.onMessage((channel, user, message) => {
+        chatClient.onMessage(async (channel, user, message) => {
             console.log(`💬 ${user}: ${message}`);
             if (message.startsWith('!')) {
                 console.log(`🔹 Detected command: ${message}`);
                 
                 if (message.toLowerCase() === '!play') {
-                    console.log(`🎮 ${user} used !play command. Sending welcome message...`);
-                    chatClient.say(channel, `Welcome to the game, @${user}!`);
+                    console.log(`🎮 ${user} used !play command. Attempting to add player...`);
+                    const responseMessage = await addNewPlayer(user);
+                    chatClient.say(channel, responseMessage);
                 }
             }
         });

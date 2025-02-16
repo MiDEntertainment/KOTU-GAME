@@ -7,7 +7,38 @@ const db= new Pool({
     ssl: { rejectUnauthorized: false } 
 });
 
-//START METHOD SKILLATTEMPT AND ITS HELPERS
+//METHOD ADDNEWPLAYER
+async function addNewPlayer(username) {
+    try {
+        // Check if the player already exists
+        const existingPlayer = await db.query('SELECT player_id FROM player WHERE twitch_username = $1', [username]);
+        
+        if (existingPlayer.rows.length > 0) {
+            return `@${username}, you are already on your journey. Use the channel rewards to play the game and download the Twitch extension to see your stats.`;
+        }
+
+        // Insert new player into the player table
+        const newPlayer = await db.query(
+            'INSERT INTO player (twitch_username) VALUES ($1) RETURNING player_id',
+            [username]
+        );
+        
+        const playerId = newPlayer.rows[0].player_id;
+
+        // Initialize player stats
+        await db.query(
+            `INSERT INTO player_stats (player_id) VALUES ($1)`,
+            [playerId]
+        );
+
+        return `@${username}, welcome to your new adventure! Use the channel rewards to play the game and download the Twitch extension to see your stats.`;
+    } catch (error) {
+        console.error('❌ Error adding new player:', error);
+        return `❌ An error occurred while adding you to the game, @${username}. Please try again later.`;
+    }
+}
+
+//METHOD SKILLATTEMPT AND ITS HELPERS
 /**
  * Determines the probability of success based on the player's skill level.
  * @param {number} skillLevel - The player's skill level.
@@ -109,4 +140,4 @@ async function skillAttempt(username, skillType, itemType) {
     }
 }
 
-module.exports = { skillAttempt, skillProbability, itemSelection, inventoryUpdate, updateSkillLevel };
+module.exports = { skillAttempt, skillProbability, itemSelection, inventoryUpdate, updateSkillLevel, addNewPlayer};
