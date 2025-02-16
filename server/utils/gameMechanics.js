@@ -102,7 +102,7 @@ async function skillAttempt(username, skillType, itemType) {
         await inventoryUpdate(player_id, item.item_name);
         await updateSkillLevel(player_id, skillType);
         
-        return `✅ Success! You obtained ${item.item_name}.`;
+        return `✅ Success! You obtained a ${item.item_name}.`;
     } catch (error) {
         console.error('❌ Error in skillAttempt:', error);
         return `❌ An error occurred.`;

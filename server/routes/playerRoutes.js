@@ -52,8 +52,6 @@ router.get('/player/:username/stats', async (req, res) => {
         // Fetch stats using player_id
         const statsResult = await req.db.query('SELECT * FROM player_stats WHERE player_id = $1', [playerId]);
 
-        console.log(`🛠 Stats Query result:`, statsResult.rows);
-
         if (statsResult.rows.length === 0) {
             return res.status(404).json({ error: 'Stats not found' });
         }

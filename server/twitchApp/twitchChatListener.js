@@ -27,13 +27,13 @@ async function startTwitchChatListener() {
         const apiClient = new ApiClient({ authProvider });
 
         // ✅ Convert Twitch Username to User ID
-        const user = await apiClient.users.getUserByName(channelName);
+        const user = await apiClient.users.getUserByName(botUsername);
         if (!user) {
-            throw new Error(`❌ Failed to fetch Twitch User ID for ${channelName}`);
+            throw new Error(`❌ Failed to fetch Twitch User ID for ${botUsername}`);
         }
         const userId = user.id;  // ✅ User ID needed for EventSub
 
-        console.log(`✅ Twitch User ID for ${channelName}: ${userId}`);
+        console.log(`✅ Twitch User ID for ${botUsername}: ${userId}`);
 
         // Chat client setup
         const chatClient = new ChatClient({ authProvider, channels: [channelName] });
