@@ -7,8 +7,9 @@ require('dotenv').config();
 
 // Twitch API credentials from .env
 const clientId = process.env.TWITCH_CLIENT_ID;
-const accessToken = process.env.TWITCH_ACCESS_TOKEN;
 const botUsername = process.env.TWITCH_BOT_USERNAME;
+const botAccessToken = process.env.TWITCH_ACCESS_TOKEN; // KotuGuard Token
+const eventSubAccessToken = process.env.TWITCH_EVENTSUB_ACCESS_TOKEN; // QuietGamerGirl Token
 const channelName = process.env.TWITCH_CHANNEL_NAME;
 
 async function handleSkillRedemption(chatClient, userName, skillType, itemType) {
@@ -22,26 +23,28 @@ async function handleSkillRedemption(chatClient, userName, skillType, itemType) 
 
 async function startTwitchChatListener() {
     try {
-        // Authentication
-        const authProvider = new StaticAuthProvider(clientId, accessToken);
-        const apiClient = new ApiClient({ authProvider });
+        // ✅ Auth for Chat (KotuGuard)
+        const botAuthProvider = new StaticAuthProvider(clientId, botAccessToken);
+        const botApiClient = new ApiClient({ authProvider: botAuthProvider });
 
-        // ✅ Convert Twitch Username to User ID
-        const user = await apiClient.users.getUserByName(botUsername);
-        if (!user) {
-            throw new Error(`❌ Failed to fetch Twitch User ID for ${botUsername}`);
-        }
-        const userId = user.id;  // ✅ User ID needed for EventSub
+        // ✅ Auth for EventSub (QuietGamerGirl)
+        const eventSubAuthProvider = new StaticAuthProvider(clientId, eventSubAccessToken);
+        const eventSubApiClient = new ApiClient({ authProvider: eventSubAuthProvider });
 
-        console.log(`✅ Twitch User ID for ${botUsername}: ${userId}`);
+        // ✅ Convert Twitch Username to User ID (for EventSub)
+        const user = await eventSubApiClient.users.getUserByName(channelName);
+        if (!user) throw new Error(`❌ Failed to fetch Twitch User ID for ${channelName}`);
+        const userId = user.id;
+        console.log(`✅ Twitch User ID for ${channelName}: ${userId}`);
 
-        // Chat client setup
-        const chatClient = new ChatClient({ authProvider, channels: [channelName] });
+         // **Twitch Chat Client (KotuGuard)**
+         //may need to change to just botAuthProvider and remove the :
+        const chatClient = new ChatClient({ authProvider: botAuthProvider, channels: [channelName] });
         await chatClient.connect();
         console.log(`✅ Twitch Chat Bot connected as ${botUsername}`);
-        
+
         // **EventSub WebSocket Listener for Channel Point Redemptions**
-        const listener = new EventSubWsListener({ apiClient });
+        const listener = new EventSubWsListener({ apiClient: eventSubApiClient });
         listener.onChannelRedemptionAdd(userId, async (e) => {
             const rewardTitle = e.rewardTitle.toLowerCase();
             if (rewardTitle === 'fish') {
