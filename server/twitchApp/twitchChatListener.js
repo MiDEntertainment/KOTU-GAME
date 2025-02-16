@@ -2,7 +2,7 @@ const { ChatClient } = require('@twurple/chat');
 const { ApiClient } = require('@twurple/api');
 const { StaticAuthProvider } = require('@twurple/auth');
 const { EventSubWsListener } = require('@twurple/eventsub-ws');
-const { skillAttempt } = require('../utils/gameMechanics');
+const { skillAttempt,addNewPlayer} = require('../utils/gameMechanics');
 require('dotenv').config();
 
 // Twitch API credentials from .env

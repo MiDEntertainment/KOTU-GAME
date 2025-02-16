@@ -85,39 +85,47 @@ async function itemSelection(itemType, location) {
  */
 async function inventoryUpdate(playerId, itemName) {
     try {
-        // Get the item's limit and current quantity in player's inventory
-        const result = await db.query(
-            `SELECT 
-                i.item_limit, 
-                COALESCE(inv.quantity, 0) AS current_quantity
-             FROM items i
-             LEFT JOIN inventory inv ON i.item_name = inv.item_name AND inv.player_id = $1
-             WHERE i.item_name = $2`,
-            [playerId, itemName]
+        // ✅ Step 1: Get the item limit from the 'items' table
+        const itemResult = await db.query(
+            `SELECT item_limit FROM items WHERE item_name = $1`,
+            [itemName]
         );
 
-        if (result.rows.length === 0) {
+        if (itemResult.rows.length === 0) {
             console.error(`❌ Item '${itemName}' not found in the items table.`);
             return;
         }
 
-        const { item_limit, current_quantity } = result.rows[0];
+        const itemLimit = itemResult.rows[0].item_limit;
 
-        // Ensure adding another item doesn't exceed the item_limit
-        if (current_quantity >= item_limit) {
-            console.log(`⚠️ Player ${playerId} cannot carry more '${itemName}' (limit: ${item_limit}).`);
-            return;
-        }
-
-        // Update inventory with new quantity
-        await db.query(
-            `UPDATE inventory 
-             SET quantity = quantity + 1 
-             WHERE player_id = $1 AND item_name = $2`,
+        // ✅ Step 2: Get the current quantity from the 'inventory' table
+        const inventoryResult = await db.query(
+            `SELECT quantity FROM inventory WHERE player_id = $1 AND item_name = $2`,
             [playerId, itemName]
         );
 
-        console.log(`✅ Added ${itemName} to player ${playerId}'s inventory.`);
+        let currentQuantity = 0;
+
+        if (inventoryResult.rows.length > 0) {
+            currentQuantity = inventoryResult.rows[0].quantity;
+        }
+
+        // ✅ Step 3: Check if the new quantity exceeds the item limit
+        if (currentQuantity >= itemLimit) {
+            console.log(`⚠️ Player ${playerId} cannot carry more '${itemName}' (limit: ${itemLimit}).`);
+            return;
+        }
+
+        // ✅ Step 4: Insert new item if not exists or update quantity
+        await db.query(
+            `INSERT INTO inventory (player_id, item_name, quantity)
+             VALUES ($1, $2, 1)
+             ON CONFLICT (player_id, item_name) 
+             DO UPDATE SET quantity = inventory.quantity + 1`,
+            [playerId, itemName]
+        );
+
+        console.log(`✅ Added '${itemName}' to player ${playerId}'s inventory (new quantity: ${currentQuantity + 1}).`);
     } catch (error) {
         console.error(`❌ Error updating inventory for player ${playerId}:`, error);
     }
