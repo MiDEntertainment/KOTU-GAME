@@ -27,10 +27,10 @@ async function skillAttempt(username, skillType, itemType) {
         const item = await getItemDetailsByType(playerId, itemType);
         if (!item) return `❌ No valid item found for ${itemType}.`;
 
-        await updateInventory(playerId, item.item_name, 1);
+        const inventoryResponse = await updateInventory(playerId, item.item_name, 1);
         await updatePlayerStats(playerId, { [skillType]: stats[skillType] + 1 });
 
-        return `✅ You successfully obtained ${item.item_name}!`;
+        return inventoryResponse;
     } catch (error) {
         console.error('❌ Error in skillAttempt:', error);
         return `❌ An error occurred.`;
@@ -73,9 +73,9 @@ async function sellItem(username, itemName) {
         if (!item || item.sell_price === 0) return `❌ You cannot sell ${itemName}.`;
 
         await updateInventory(playerId, itemName, -1);
-        await updateInventory(playerId, 'Lumins', item.sell_price);
+        const sellResponse = await updateInventory(playerId, 'Lumins', item.sell_price);
 
-        return `✅ You sold ${itemName} for ${item.sell_price} Lumins!`;
+        return sellResponse;
     } catch (error) {
         console.error(`❌ Error processing sell command:`, error);
         return `❌ Error processing sell command: ${error.message}`;
