@@ -11,7 +11,6 @@ CREATE TABLE IF NOT EXISTS player_stats (
     health INTEGER DEFAULT 10,                -- Player's health (default 10)
     fighting_skills INTEGER DEFAULT 0,         -- Fighting skill level
     life_skills INTEGER DEFAULT 0,             -- Crafting skill level
-    fishing_skills INTEGER DEFAULT 0,          -- Fishing skill level
     hunting_skills INTEGER DEFAULT 0,          -- Hunting skill level
     searching_skills INTEGER DEFAULT 0,        -- Scouting skill level
     current_location INTEGER DEFAULT 1,       -- Current objective the player is on

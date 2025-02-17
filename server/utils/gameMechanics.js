@@ -8,6 +8,8 @@ const db= new Pool({
     ssl: { rejectUnauthorized: false } 
 });
 
+//HELPER METHODS
+
 //search the db for the player or add new
 async function addNewPlayer(username) {
     try {
@@ -55,12 +57,8 @@ async function addNewPlayer(username) {
     }
 }
 
-//METHOD SKILLATTEMPT AND ITS HELPERS
-/**
- * Determines the probability of success based on the player's skill level.
- * @param {number} skillLevel - The player's skill level.
- * @returns {boolean} - True if successful, false if failed.
- */
+
+//Probability of a Succsess
 function skillProbability(skillLevel) {
     const probabilities = [35, 50, 75, 99];
     let threshold;
@@ -77,12 +75,7 @@ function skillProbability(skillLevel) {
     return success;
 }
 
-/**
- * Selects a valid item based on type and location.
- * @param {string} itemType - The type of item (e.g., 'Fish').
- * @param {number} location - The player's current location.
- * @returns {Promise<object|null>} - Selected item or null if none found.
- */
+// Pull a Valid item from availiable items
 async function itemSelection(itemType, location) {
     const result = await db.query(
         `SELECT * FROM items 
@@ -95,13 +88,8 @@ async function itemSelection(itemType, location) {
     return selectedItem;
 }
 
-/**
- * Updates the player's inventory, ensuring the item quantity does not exceed the item's limit.
- * @param {number} playerId - The player's ID.
- * @param {string} itemName - The name of the item.
- * @param {number} [amount=1] - The amount to add or remove (defaults to 1 if not specified).
- */
-async function inventoryUpdate(playerId, itemName, amount = 1) {
+//Update user Inventory deafult is +1
+async function inventoryUpdate(playerId, itemName, amount) {
     try {
         // ✅ Step 1: Get the item limit from the 'items' table
         const itemResult = await db.query(
@@ -145,22 +133,43 @@ async function inventoryUpdate(playerId, itemName, amount = 1) {
     }
 }
 
-/**
- * Increases the player's skill level by 1.
- * @param {number} playerId - The player's ID.
- * @param {string} skillType - The skill column to update.
- */
+
+//Get player ID by username
+async function getPlayerId(username) {
+    try {
+        // Normalize username to lowercase for consistent checking
+        const lowerUsername = username.toLowerCase();
+
+        const result = await db.query('SELECT player_id FROM player WHERE twitch_username = $1', [lowerUsername]);
+        if (result.rows.length === 0) return null;
+        return result.rows[0].player_id;
+    } catch (error) {
+        console.error('❌ Error fetching player ID:', error);
+        return null;
+    }
+}
+
+//Increase player skills by 1
 async function updateSkillLevel(playerId, skillType) {
     await db.query(`UPDATE player_stats SET ${skillType} = ${skillType} + 1 WHERE player_id = $1`, [playerId]);
 }
 
-/**
- * Attempts a skill-based action (e.g., fishing, hunting, searching).
- * @param {string} username - The player's Twitch username.
- * @param {string} skillType - The skill type being attempted (e.g., 'fishing_skills').
- * @param {string} itemType - The type of item to retrieve (e.g., 'Fish').
- * @returns {Promise<string>} - Success or failure message.
- */
+//Upadate player stats
+async function updatePlayerStats(playerId, updates) {
+    try {
+        const updateQueries = Object.entries(updates)
+            .map(([key, value], index) => `${key} = $${index + 2}`)
+            .join(', ');
+
+        const values = [playerId, ...Object.values(updates)];
+
+        await db.query(`UPDATE player_stats SET ${updateQueries} WHERE player_id = $1`, values);
+    } catch (error) {
+        console.error(`❌ Error updating player stats for player ${playerId}:`, error);
+    }
+}
+
+//MAIN METHOD SKILLATTEMP
 async function skillAttempt(username, skillType, itemType) {
     try {
         const result = await db.query(
@@ -184,58 +193,43 @@ async function skillAttempt(username, skillType, itemType) {
         
         
         await updateSkillLevel(player_id, skillType);
-        await inventoryUpdate(player_id, item.item_name);
         
-        return await inventoryUpdate(player_id, item.item_name);
+        return await inventoryUpdate(player_id, item.item_name, 1);
     } catch (error) {
         console.error('❌ Error in skillAttempt:', error);
         return `❌ An error occurred.`;
     }
 }
 
-//EAT AND SELL ITEMS AND ITS HELPERS
-// Helper function to get player ID by username
-async function getPlayerId(username) {
-    try {
-        // Normalize username to lowercase for consistent checking
-        const lowerUsername = username.toLowerCase();
-
-        const result = await db.query('SELECT player_id FROM player WHERE twitch_username = $1', [lowerUsername]);
-        if (result.rows.length === 0) return null;
-        return result.rows[0].player_id;
-    } catch (error) {
-        console.error('❌ Error fetching player ID:', error);
-        return null;
-    }
-}
-
-/**
- * Updates the player's stats with new values.
- * @param {number} playerId - The player's ID.
- * @param {object} updates - An object containing stat keys and new values.
- */
-async function updatePlayerStats(playerId, updates) {
-    try {
-        const updateQueries = Object.entries(updates)
-            .map(([key, value], index) => `${key} = $${index + 2}`)
-            .join(', ');
-
-        const values = [playerId, ...Object.values(updates)];
-
-        await db.query(`UPDATE player_stats SET ${updateQueries} WHERE player_id = $1`, values);
-    } catch (error) {
-        console.error(`❌ Error updating player stats for player ${playerId}:`, error);
-    }
-}
-
 //MAIN METHOD EAT
-async function eatItem(username, itemName, amount) {
+//double check this tomorrow
+async function eatItem(username, itemName) {
     try {
-        // ✅ Get the player's ID
-        const playerId = await getPlayerId(username);
-        if (!playerId) return `❌ Error: Player not found.`;
+        // ✅ Check for player
+        const result = await db.query(
+            `SELECT iv.player_id 
+             FROM inventory iv 
+             JOIN player p ON iv.player_id = p.player_id 
+             WHERE p.twitch_username = $1`, [username]
+        );
 
-         // ✅ Fetch the item details from the `items` table
+        if (result.rows.length === 0) return `❌ Player not found. To register your player enter !play in chat`;
+
+        // ✅ Get player's current health and max health
+        const statsResult = await db.query(
+            `SELECT health, health_cap FROM player_stats WHERE player_id = $1`,
+            [playerId]
+        );
+
+        let currentHealth = statsResult.rows[0].health;
+        let maxHealth = statsResult.rows[0].health_cap;
+
+        // ✅ Prevent over-healing
+        if (currentHealth >= maxHealth) {
+            return `❌ Error: You are already at full health!`;
+        }
+                
+        // ✅ Fetch the item details from the `items` table
          const itemResult = await db.query(
             `SELECT sell_price FROM items WHERE item_name = $1`,
             [itemName]
@@ -246,45 +240,16 @@ async function eatItem(username, itemName, amount) {
             return `❌ Error: You cannot eat ${itemName}.`;
         }
 
-        // ✅ Fetch the player's inventory for the specific item
-        const inventoryResult = await db.query(
-            `SELECT quantity FROM inventory WHERE player_id = $1 AND item_name = $2`,
-            [playerId, itemName]
-        );
-
-        // ✅ Check if the item exists in inventory
-        if (inventoryResult.rows.length === 0 || inventoryResult.rows[0].quantity < amount) {
-            return `❌ Error: Not enough ${itemName} in inventory.`;
-        }
-
-        // ✅ Get player's current health and max health
-        const statsResult = await db.query(
-            `SELECT health, health_cap FROM player_stats WHERE player_id = $1`,
-            [playerId]
-        );
-
-        if (statsResult.rows.length === 0) {
-            return `❌ Error: Player stats not found.`;
-        }
-
-        let currentHealth = statsResult.rows[0].health;
-        let maxHealth = statsResult.rows[0].health_cap;
-
-        // ✅ Prevent over-healing
-        if (currentHealth >= maxHealth) {
-            return `❌ Error: You are already at full health!`;
-        }
-
         // ✅ Determine how many items to consume
-        let healthRestored = amount * 5; // Assume each item restores 5 health
-        let newHealth = Math.min(currentHealth + healthRestored, maxHealth);
-        let itemsConsumed = Math.ceil((newHealth - currentHealth) / 5);
+        let newHealth = Math.min(currentHealth + 5, maxHealth);
+
+        const playerId = getPlayerId(username) 
 
         // ✅ Update inventory and player stats
-        await inventoryUpdate(playerId, itemName, -itemsConsumed);
+        await inventoryUpdate(playerId, itemName, -1);
         await updatePlayerStats(playerId, { health: newHealth });
 
-        return `✅ You ate ${itemsConsumed} ${itemName} and recovered ${newHealth - currentHealth} health!`;
+        return `✅ You ate ${itemsConsumed} ${itemName} and now have ${newHealth} health!`;
     } catch (error) {
         console.error(`❌ Error processing eat command:`, error);
         return `❌ Error processing eat command: ${error.message}`;
@@ -292,50 +257,41 @@ async function eatItem(username, itemName, amount) {
 }
 
 //MAIN METHOD SELL
-async function sellItem(username, itemName, amount) {
+//double check this tomorrow
+async function sellItem(username, itemName) {
     try {
-        // ✅ Get the player's ID
-        const playerId = await getPlayerId(username);
-        if (!playerId) return `❌ Error: Player not found.`;
+        // ✅ Check for player
+        const result = await db.query(
+            `SELECT iv.player_id 
+             FROM inventory iv 
+             JOIN player p ON iv.player_id = p.player_id 
+             WHERE p.twitch_username = $1`, [username]
+        );
+
+        if (result.rows.length === 0) return `❌ Player not found. To register your player enter !play in chat`;
 
         // ✅ Fetch the item's sell price from the `items` table
-        const itemResult = await db.query(
+        const sellPrice = await db.query(
             `SELECT sell_price FROM items WHERE item_name = $1`,
             [itemName]
         );
 
-        if (itemResult.rows.length === 0) {
+        if (sellPrice.rows.length === 0) {
             return `❌ Error: ${itemName} does not exist your inventory.`;
         }
-
-        const sellPrice = itemResult.rows[0].sell_price;
 
         // ✅ If `sell_price` is 0, prevent selling
         if (sellPrice === 0) {
             return `❌ Error: You cannot sell ${itemName}.`;
         }
 
-        // ✅ Fetch the player's inventory for the specific item
-        const inventoryResult = await db.query(
-            `SELECT quantity FROM inventory WHERE player_id = $1 AND item_name = $2`,
-            [playerId, itemName]
-        );
-
-        // ✅ Check if the player has enough of the item
-        if (inventoryResult.rows.length === 0 || inventoryResult.rows[0].quantity < amount) {
-            return `❌ Error: Not enough ${itemName} in inventory to sell.`;
-        }
-
-        // ✅ Calculate the earnings
-        const saleValue = amount * sellPrice;
+        const playerId = await getPlayerId(username);
 
         // ✅ Update inventory (remove sold items)
-        await inventoryUpdate(playerId, itemName, -amount);
+        await inventoryUpdate(playerId, itemName, -1);
 
         // ✅ Update inventory (add Lumins)
-        await inventoryUpdate(playerId, 'Lumins', saleValue);
-
-        return await inventoryUpdate(playerId, 'Lumins', saleValue);
+         return await inventoryUpdate(playerId, 'Lumins', sellPrice);
     } catch (error) {
         console.error(`❌ Error processing sell command:`, error);
         return `❌ Error processing sell command: ${error.message}`;

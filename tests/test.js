@@ -34,9 +34,9 @@ const { skillAttempt, skillProbability, itemSelection, inventoryUpdate, updateSk
 
 // (async () => {
 
-//     // ✅ 1. Test successful eating
-//     console.log('✅ 1. Test successful eating');
-//     console.log(await eatItem('quietgamergirl', 'Common Fish', 1)); // Expected: Gains health, updates inventory
+    // ✅ 1. Test successful eating
+    console.log('✅ 1. Test successful eating');
+    console.log(await eatItem('quietgamergirl', 'fish', 1)); // Expected: Gains health, updates inventory
 
 //     // ❌ 2. Test eating item not in inventory
 //     console.log('❌ 2. Test eating item not in inventory');

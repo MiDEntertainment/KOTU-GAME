@@ -19,11 +19,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 document.getElementById("health").textContent = playerData.health ?? "N/A";
                 document.getElementById("fighting_skills").textContent = playerData.fighting_skills ?? "N/A";
                 document.getElementById("life_skills").textContent = playerData.life_skills ?? "N/A";
-                document.getElementById("fishing_skills").textContent = playerData.fishing_skills ?? "N/A";
                 document.getElementById("hunting_skills").textContent = playerData.hunting_skills ?? "N/A";
                 document.getElementById("searching_skills").textContent = playerData.searching_skills ?? "N/A";
                 document.getElementById("current_location").textContent = playerData.current_location ?? "N/A";
                 document.getElementById("current_rank").textContent = playerData.current_rank ?? "N/A";
+                document.getElementById("health_cap").textContent = playerData.health_cap ?? "N/A";
             })
             .catch(error => {
                 console.error("❌ Error fetching player data:", error);

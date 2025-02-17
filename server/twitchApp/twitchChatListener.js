@@ -22,32 +22,18 @@ async function handleSkillRedemption(chatClient, userName, skillType, itemType) 
     }
 }
 
-/**
- * Handles the !eat command, allowing players to consume food items.
- * @param {string} channelName - The Twitch channel name.
- * @param {string} userName - The Twitch username.
- * @param {string} itemName - The name of the item to eat.
- * @param {number} amount - The quantity to consume.
- */
-async function handleEatCommand(chatClient, userName, itemName, amount = 1) {
+async function handleEatCommand(chatClient, userName, itemName) {
     try {
-        const resultMessage = await eatItem(userName, itemName, amount);
+        const resultMessage = await eatItem(userName, itemName);
         chatClient.say(`#${channelName}`, `@${userName} ${resultMessage}`);
     } catch (error) {
         console.error(`❌ Error processing eat command for ${userName}:`, error);
     }
 }
 
-/**
- * Handles the !sell command, allowing players to sell inventory items.
- * @param {string} channelName - The Twitch channel name.
- * @param {string} userName - The Twitch username.
- * @param {string} itemName - The name of the item to sell.
- * @param {number} amount - The quantity to sell.
- */
-async function handleSellCommand(chatClient, userName, itemName, amount = 1) {
+async function handleSellCommand(chatClient, userName, itemName) {
     try {
-        const resultMessage = await sellItem(userName, itemName, amount);
+        const resultMessage = await sellItem(userName, itemName);
         chatClient.say(`#${channelName}`, `@${userName} ${resultMessage}`);
     } catch (error) {
         console.error(`❌ Error processing sell command for ${userName}:`, error);
@@ -77,45 +63,31 @@ async function startTwitchChatListener() {
         console.log(`✅ Twitch Chat Bot connected as ${botUsername}`);
 
         // **EventSub WebSocket Listener for Channel Point Redemptions**
+        //need to fix this so that eat and sell replace the item with what is type in chat
         const listener = new EventSubWsListener({ apiClient: eventSubApiClient });
         listener.onChannelRedemptionAdd(userId, async (e) => {
             const rewardTitle = e.rewardTitle.toLowerCase();
-            if (rewardTitle === 'fish') {
-                handleSkillRedemption(chatClient, e.userName, 'fishing_skills', 'Fish');
-            } else if (rewardTitle === 'hunt') {
+            if (rewardTitle === 'hunt') {
                 handleSkillRedemption(chatClient, e.userName, 'hunting_skills', 'Animal');
             } else if (rewardTitle === 'search') {
                 handleSkillRedemption(chatClient, e.userName, 'searching_skills', 'iQuest');
+            } else if (rewardTitle === 'eat') {
+                handleEatCommand(chatClient, e.userName, 'fish');
+            } else if (rewardTitle === 'sell') {
+                handleSellCommand(chatClient, e.userName, 'fish');
             }
         });
 
-        /**
-         * Listens for Twitch chat messages and processes commands.
-         */
+        // Listen for chat messages
         chatClient.onMessage(async (channel, user, message) => {
             console.log(`💬 ${user}: ${message}`);
-            
             if (message.startsWith('!')) {
                 console.log(`🔹 Detected command: ${message}`);
-        
-                const args = message.split(' ');
-                const command = args[0].toLowerCase();
-               
-                switch (command) {
-                    case "!play":
-                        const responseMessage = await addNewPlayer(user);
-                        chatClient.say(channel, responseMessage);
-                        break;
-                    
-                    case "!eat":
-                        if (args.length < 2) return;
-                        await handleEatCommand(channel, user, args[1], args.length > 2 ? parseInt(args[2]) : 1);
-                        break;
-                        
-                    case "!sell":
-                        if (args.length < 2) return;
-                        await handleSellCommand(channel, user, args[1], args.length > 2 ? parseInt(args[2]) : 1);
-                        break;
+                
+                if (message.toLowerCase() === '!play') {
+                    console.log(`🎮 ${user} used !play command. Attempting to add player...`);
+                    const responseMessage = await addNewPlayer(user);
+                    chatClient.say(channel, responseMessage);
                 }
             }
         });

@@ -39,21 +39,18 @@ VALUES
 
 INSERT INTO items (item_name, item_location, item_type, limit_type, item_limit)
 VALUES
-    ('Common Fish', 0, 'Fish', 'individual', 100),
-    ('Common Rabbit', 0, 'Animal', 'individual', 100),
-    ('Bio Bow', 0, 'Tool', 'individual', 1),
-    ('Quantum Lure', 0, 'Tool', 'individual', 1),
-    ('Rez Watch', 0, 'Tool', 'individual', 1),
-    ('Gaurd Conversation', 0, 'Relationship', 'individual', 100),
-    ('Lumins', 0, 'Currency', 'individual', 100);
+    ('fish', 0, 'Fish', 'individual', 100),
+    ('rabbit', 0, 'Animal', 'individual', 100),
+    ('inim', 0, 'Relationship', 'individual', 100),
+    ('lumins', 0, 'Currency', 'individual', 100);
 
 INSERT INTO task_rewards (reward_id, task_id, item_name, quantity)
 VALUES
-    (1, 1, 'XP', 5),
-    (3, 2, 'XP', 5),
-    (5, 3, 'XP', 5),
-    (7, 4, 'XP', 5),
-    (8, 4, 'Lumins', 10);
+    (1, 1, 'xp', 5),
+    (3, 2, 'xp', 5),
+    (5, 3, 'xp', 5),
+    (7, 4, 'xp', 5),
+    (8, 4, 'lumins', 10);
 
 INSERT INTO ranks (rank_id, rank_name, xp_threshold)
 VALUES
@@ -64,10 +61,3 @@ VALUES
     (5, 'Earl', 9600),
     (6, 'Marquess', 19200),
     (7, 'Duke', 38400);
-
-INSERT INTO task_requirements (task_id, item_name, quantity_required)
-VALUES
-    (2, 'Common Fish', 10),
-    (3, 'Common Rabbit', 10),
-    (1, 'Guard Conversation', 1),
-    (4, 'Lumins', 10);
