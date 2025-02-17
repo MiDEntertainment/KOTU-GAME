@@ -1,5 +1,6 @@
 require('dotenv').config();
 const { Pool } = require('pg');
+const { ApiClient } = require('@twurple/api');
 
 // ✅ PostgreSQL Database Connection
 const db = new Pool({
@@ -57,11 +58,8 @@ async function updatePlayerStats(playerId, updates) {
 async function addNewPlayer(username) {
     try {
         // Check if the player already exists
-        const existingPlayer = await db.query('SELECT player_id FROM player WHERE LOWER(twitch_username) = $1', [username]);
-
-        if (existingPlayer.rows.length > 0) {
-            return `@${username}, you are already on your journey. Use the channel rewards to play the game and download the Twitch extension to see your stats.`;
-        }
+        const playerId = await getPlayerId(username);
+        if (!playerId) return `@${username}, you are already on your journey. Use the channel rewards to play the game and download the Twitch extension to see your stats.`;
 
         // Fetch Twitch user ID
         const user = await eventSubApiClient.users.getUserByName(username);
@@ -73,27 +71,27 @@ async function addNewPlayer(username) {
         // Insert new player into the player table
         const newPlayer = await db.query(
             `INSERT INTO player (twitch_username, join_date, twitch_id) 
-             VALUES ($1, NOW(), $2) RETURNING player_id`,
+             VALUES ($1, NOW(), $2)`,
             [username, twitchId]
         );
 
-        const playerId = newPlayer.rows[0].player_id;
+        const newPlayerId = newPlayer.rows[0].player_id;
 
         // Initialize player stats
         await db.query(
             `INSERT INTO player_stats (player_id, health, fighting_skills, life_skills, fishing_skills, hunting_skills, searching_skills, current_location, current_rank, health_cap)
              VALUES ($1, 10, 0, 0, 0, 0, 0, 1, 1, 10)`,
-            [playerId]
+            [newPlayerId]
         );
 
         // Initialize inventory with XP
         await db.query(
             `INSERT INTO inventory (player_id, item_name, quantity) 
-             VALUES ($1, 'XP', 10)`,
-            [playerId]
+             VALUES ($1, 'xp', 10)`,
+            [newPlayerId]
         );
 
-        return `@${username}, Welcome traveler! Use channel rewards to play the game. Start by using the "Talk" button to chat with Inim. Need Help? YouTube`;
+        return `@${username}, Welcome traveler! Use channel rewards to play the game.`;
     } catch (error) {
         console.error('❌ Error adding new player:', error);
         return `❌ An error occurred while adding you to the game, @${username}. Please try again later.`;
