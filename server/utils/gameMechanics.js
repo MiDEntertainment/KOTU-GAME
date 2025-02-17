@@ -11,11 +11,8 @@ const db= new Pool({
 //search the db for the player or add new
 async function addNewPlayer(username) {
     try {
-        // Normalize username to lowercase for consistent checking
-        const lowerUsername = username.toLowerCase();
-
         // Check if the player already exists
-        const existingPlayer = await db.query('SELECT player_id FROM player WHERE LOWER(twitch_username) = $1', [lowerUsername]);
+        const existingPlayer = await db.query('SELECT player_id FROM player WHERE LOWER(twitch_username) = $1', [username]);
 
         if (existingPlayer.rows.length > 0) {
             return `@${username}, you are already on your journey. Use the channel rewards to play the game and download the Twitch extension to see your stats.`;

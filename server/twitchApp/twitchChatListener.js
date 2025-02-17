@@ -96,7 +96,7 @@ async function startTwitchChatListener() {
             console.log(`💬 ${user}: ${message}`);
             
             if (message.startsWith('!')) {
-                console.log(`🔹 Detected command: ${message}`);
+                console.log(`🔹 Detected command: ${message} ${user} `);
         
                 const args = message.split(' ');
                 const command = args[0].toLowerCase();
