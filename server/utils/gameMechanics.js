@@ -1,5 +1,5 @@
-const { getPlayerId, updatePlayerStats, getItemDetails } = require('./dbHelper');
-const {updateInventory } = require('./inventoryManager');
+const { getPlayerId, getPlayerStats, updatePlayerStats, getItemDetails } = require('./dbHelper');
+const { updateInventory } = require('./inventoryManager');
 
 // ✅ Probability Calculation
 function skillProbability(skillLevel) {
@@ -17,6 +17,9 @@ async function skillAttempt(username, skillType, itemType) {
     try {
         const playerId = await getPlayerId(username);
         if (!playerId) return `❌ Player not found. Use !play to register.`;
+
+        const stats = await getPlayerStats(playerId); // ✅ Fix: Fetch stats before using them
+        if (!stats) return `❌ Player stats not found.`;
 
         if (!skillProbability(stats[skillType])) return `❌ You failed to capture anything this time.`;
 
@@ -37,7 +40,10 @@ async function skillAttempt(username, skillType, itemType) {
 async function eatItem(username, itemName) {
     try {
         const playerId = await getPlayerId(username);
-        if (!playerId) return `❌ Player not found. Use !play to register.`;
+        if (!playerId) return `❌ Player not found.`;
+
+        const stats = await getPlayerStats(playerId); // ✅ Fix: Fetch stats before using them
+        if (!stats) return `❌ Player stats not found.`;
 
         const item = await getItemDetails(itemName);
         if (!item || item.sell_price === 0) return `❌ You cannot eat ${itemName}.`;
@@ -59,7 +65,7 @@ async function eatItem(username, itemName) {
 async function sellItem(username, itemName) {
     try {
         const playerId = await getPlayerId(username);
-        if (!playerId) return `❌ Player not found. Use !play to register.`;
+        if (!playerId) return `❌ Player not found.`;
 
         const item = await getItemDetails(itemName);
         if (!item || item.sell_price === 0) return `❌ You cannot sell ${itemName}.`;
@@ -73,6 +79,5 @@ async function sellItem(username, itemName) {
         return `❌ Error processing sell command: ${error.message}`;
     }
 }
-
 
 module.exports = { skillAttempt, eatItem, sellItem };

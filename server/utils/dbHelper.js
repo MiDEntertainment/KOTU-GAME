@@ -22,19 +22,19 @@ async function getPlayerId(username) {
     }
 }
 
-// ✅ Fetch player stats (may not need)
-// async function getPlayerStats(playerId) {
-//     try {
-//         const result = await db.query(
-//             'SELECT * FROM player_stats WHERE player_id = $1',
-//             [playerId]
-//         );
-//         return result.rows.length ? result.rows[0] : null;
-//     } catch (error) {
-//         console.error('❌ Error fetching player stats:', error);
-//         return null;
-//     }
-// }
+// ✅ Fetch player stats
+async function getPlayerStats(playerId) {
+    try {
+        const result = await db.query(
+            'SELECT * FROM player_stats WHERE player_id = $1',
+            [playerId]
+        );
+        return result.rows.length ? result.rows[0] : null;
+    } catch (error) {
+        console.error('❌ Error fetching player stats:', error);
+        return null;
+    }
+}
 
 // ✅ Update player stats dynamically
 async function updatePlayerStats(playerId, updates) {
@@ -111,4 +111,4 @@ async function addNewPlayer(username) {
     }
 }
 
-module.exports = { db, getPlayerId, updatePlayerStats, getItemDetails, addNewPlayer};
+module.exports = { db, getPlayerId, getPlayerStats, updatePlayerStats, getItemDetails, addNewPlayer};
