@@ -100,8 +100,6 @@ async function startTwitchChatListener() {
         
                 const args = message.split(' ');
                 const command = args[0].toLowerCase();
-                const userName = user?.username; // Ensure username is not undefined
-                const channelName = channel.replace('#', '');
         
                 if (!userName) {
                     console.error("❌ Error: Twitch username is undefined.");
@@ -110,18 +108,18 @@ async function startTwitchChatListener() {
         
                 switch (command) {
                     case "!play":
-                        const responseMessage = await addNewPlayer(userName);
+                        const responseMessage = await addNewPlayer(user);
                         chatClient.say(channel, responseMessage);
                         break;
                     
                     case "!eat":
                         if (args.length < 2) return;
-                        await handleEatCommand(channelName, userName, args[1], args.length > 2 ? parseInt(args[2]) : 1);
+                        await handleEatCommand(channel, user, args[1], args.length > 2 ? parseInt(args[2]) : 1);
                         break;
                         
                     case "!sell":
                         if (args.length < 2) return;
-                        await handleSellCommand(channelName, userName, args[1], args.length > 2 ? parseInt(args[2]) : 1);
+                        await handleSellCommand(channel, user, args[1], args.length > 2 ? parseInt(args[2]) : 1);
                         break;
                 }
             }
