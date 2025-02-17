@@ -100,12 +100,7 @@ async function startTwitchChatListener() {
         
                 const args = message.split(' ');
                 const command = args[0].toLowerCase();
-        
-                if (!userName) {
-                    console.error("❌ Error: Twitch username is undefined.");
-                    return;
-                }
-        
+               
                 switch (command) {
                     case "!play":
                         const responseMessage = await addNewPlayer(user);
