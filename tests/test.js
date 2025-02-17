@@ -1,4 +1,4 @@
-const { skillAttempt, skillProbability, itemSelection, inventoryUpdate, updateSkillLevel, addNewPlayer, eatItem, sellItem} = require('../server/utils/gameMechanics');
+const { db, skillProbability, getPlayerId, updatePlayerStats, getItemDetails, getInventory, updateInventory, skillAttempt, eatItem, sellItem} = require('../server/utils/gameMechanics');
 
 // //Unit tests for skillAttempt functions. Check amount in DB before each test
 // (async () => {
