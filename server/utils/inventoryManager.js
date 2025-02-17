@@ -34,6 +34,7 @@ async function getItemLimit(itemName) {
 async function updateInventory(playerId, itemName, amount) {
     try {
         const currentQuantity = await getInventory(playerId, itemName);
+        console.log('Player'+ playerId, 'item' + itemName, 'quanitiy' + amount)
         if (currentQuantity === null) return `❌ Inventory check failed.`;
 
         const itemLimit = await getItemLimit(itemName);

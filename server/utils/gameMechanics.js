@@ -73,7 +73,7 @@ async function sellItem(username, itemName) {
         if (!item || item.sell_price === 0) return `❌ You cannot sell ${itemName}.`;
 
         await updateInventory(playerId, itemName, -1);
-        const sellResponse = await updateInventory(playerId, 'Lumins', item.sell_price);
+        const sellResponse = await updateInventory(playerId, 'lumins', item.sell_price);
 
         return sellResponse;
     } catch (error) {
