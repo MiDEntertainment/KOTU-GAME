@@ -94,14 +94,20 @@ async function startTwitchChatListener() {
          */
         chatClient.onMessage(async (channel, user, message) => {
             console.log(`💬 ${user}: ${message}`);
+            
             if (message.startsWith('!')) {
                 console.log(`🔹 Detected command: ${message}`);
-                
+        
                 const args = message.split(' ');
                 const command = args[0].toLowerCase();
-                const userName = user.username;
+                const userName = user?.username; // Ensure username is not undefined
                 const channelName = channel.replace('#', '');
-                
+        
+                if (!userName) {
+                    console.error("❌ Error: Twitch username is undefined.");
+                    return;
+                }
+        
                 switch (command) {
                     case "!play":
                         const responseMessage = await addNewPlayer(userName);
