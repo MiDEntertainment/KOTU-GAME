@@ -15,12 +15,33 @@ async function getInventory(playerId, itemName) {
     }
 }
 
+// ✅ Fetch item limit from the items table
+async function getItemLimit(itemName) {
+    try {
+        const result = await db.query(
+            'SELECT item_limit FROM items WHERE item_name = $1',
+            [itemName]
+        );
+
+        return result.rows.length ? result.rows[0].item_limit : null;
+    } catch (error) {
+        console.error('❌ Error fetching item limit:', error);
+        return null;
+    }
+}
+
 // ✅ Update inventory (Add or Remove items)
 async function updateInventory(playerId, itemName, amount) {
     try {
         const currentQuantity = await getInventory(playerId, itemName);
-
         if (currentQuantity === null) return `❌ Inventory check failed.`;
+
+        const itemLimit = await getItemLimit(itemName);
+        if (itemLimit === null) return `❌ Item data not found.`;
+
+        if (amount > 0 && currentQuantity + amount > itemLimit) {
+            return `❌ Inventory for item '${itemName}' is full.`;
+        }
 
         if (currentQuantity + amount < 0) {
             return `❌ Not enough '${itemName}' in inventory to remove.`;
@@ -41,4 +62,4 @@ async function updateInventory(playerId, itemName, amount) {
     }
 }
 
-module.exports = { updateInventory, getInventory };
+module.exports = { updateInventory, getInventory, getItemLimit };
