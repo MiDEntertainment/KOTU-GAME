@@ -1,6 +1,6 @@
 require('dotenv').config();
 const { Pool } = require('pg');
-const { ApiClient } = require('@twurple/api');
+const { eventSubApiClient } = require('../twitchApp/twitchChatListener');
 
 // ✅ PostgreSQL Database Connection
 const db = new Pool({
@@ -59,7 +59,9 @@ async function addNewPlayer(username) {
     try {
         // Check if the player already exists
         const playerId = await getPlayerId(username);
-        if (!playerId) return `@${username}, you are already on your journey. Use the channel rewards to play the game and download the Twitch extension to see your stats.`;
+        if (!playerId) {
+            return `@${username}, you are already on your journey. Use the channel rewards to play the game and download the Twitch extension to see your stats.`;
+        }
 
         // Fetch Twitch user ID
         const user = await eventSubApiClient.users.getUserByName(username);

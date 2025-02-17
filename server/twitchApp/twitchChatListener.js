@@ -101,4 +101,4 @@ async function startTwitchChatListener() {
     }
 }
 
-module.exports = { startTwitchChatListener };
+module.exports = { startTwitchChatListener, eventSubApiClient };
