@@ -2,7 +2,7 @@ const { ChatClient } = require('@twurple/chat');
 const { ApiClient } = require('@twurple/api');
 const { StaticAuthProvider } = require('@twurple/auth');
 const { EventSubWsListener } = require('@twurple/eventsub-ws');
-const { skillAttempt,addNewPlayer} = require('../utils/gameMechanics');
+const { skillAttempt,addNewPlayer, eatItem, sellItem} = require('../utils/gameMechanics');
 require('dotenv').config();
 
 // Twitch API credentials from .env
@@ -12,12 +12,45 @@ const botAccessToken = process.env.TWITCH_ACCESS_TOKEN; // KotuGuard Token
 const eventSubAccessToken = process.env.TWITCH_EVENTSUB_ACCESS_TOKEN; // QuietGamerGirl Token
 const channelName = process.env.TWITCH_CHANNEL_NAME;
 
+
 async function handleSkillRedemption(chatClient, userName, skillType, itemType) {
     try {
         const resultMessage = await skillAttempt(userName, skillType, itemType);
         chatClient.say(`#${channelName}`, `@${userName}, ${resultMessage}`);
     } catch (error) {
         console.error(`❌ Error processing skill attempt for ${userName}:`, error);
+    }
+}
+
+/**
+ * Handles the !eat command, allowing players to consume food items.
+ * @param {string} channelName - The Twitch channel name.
+ * @param {string} userName - The Twitch username.
+ * @param {string} itemName - The name of the item to eat.
+ * @param {number} amount - The quantity to consume.
+ */
+async function handleEatCommand(chatClient, userName, itemName, amount = 1) {
+    try {
+        const resultMessage = await eatItem(userName, itemName, amount);
+        chatClient.say(`#${channelName}`, `@${userName} ${resultMessage}`);
+    } catch (error) {
+        console.error(`❌ Error processing eat command for ${userName}:`, error);
+    }
+}
+
+/**
+ * Handles the !sell command, allowing players to sell inventory items.
+ * @param {string} channelName - The Twitch channel name.
+ * @param {string} userName - The Twitch username.
+ * @param {string} itemName - The name of the item to sell.
+ * @param {number} amount - The quantity to sell.
+ */
+async function handleSellCommand(chatClient, userName, itemName, amount = 1) {
+    try {
+        const resultMessage = await sellItem(userName, itemName, amount);
+        chatClient.say(`#${channelName}`, `@${userName} ${resultMessage}`);
+    } catch (error) {
+        console.error(`❌ Error processing sell command for ${userName}:`, error);
     }
 }
 
@@ -56,16 +89,34 @@ async function startTwitchChatListener() {
             }
         });
 
-        // Listen for chat messages
+        /**
+         * Listens for Twitch chat messages and processes commands.
+         */
         chatClient.onMessage(async (channel, user, message) => {
             console.log(`💬 ${user}: ${message}`);
             if (message.startsWith('!')) {
                 console.log(`🔹 Detected command: ${message}`);
                 
-                if (message.toLowerCase() === '!play') {
-                    console.log(`🎮 ${user} used !play command. Attempting to add player...`);
-                    const responseMessage = await addNewPlayer(user);
-                    chatClient.say(channel, responseMessage);
+                const args = message.split(' ');
+                const command = args[0].toLowerCase();
+                const userName = user.username;
+                const channelName = channel.replace('#', '');
+                
+                switch (command) {
+                    case "!play":
+                        const responseMessage = await addNewPlayer(userName);
+                        chatClient.say(channel, responseMessage);
+                        break;
+                    
+                    case "!eat":
+                        if (args.length < 2) return;
+                        await handleEatCommand(channelName, userName, args[1], args.length > 2 ? parseInt(args[2]) : 1);
+                        break;
+                        
+                    case "!sell":
+                        if (args.length < 2) return;
+                        await handleSellCommand(channelName, userName, args[1], args.length > 2 ? parseInt(args[2]) : 1);
+                        break;
                 }
             }
         });

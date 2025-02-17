@@ -2,13 +2,13 @@ CREATE TABLE IF NOT EXISTS player (
     player_id SERIAL PRIMARY KEY,              -- Unique player identifier
     twitch_username VARCHAR(50) NOT NULL UNIQUE, -- Twitch username, max 50 characters
     join_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- Auto-stamped join date
+    twitch_id INTEGER NOT NULL,                -- Twitch id
 );
 
 CREATE TABLE IF NOT EXISTS player_stats (
     stat_id SERIAL PRIMARY KEY,                -- Unique identifier for each stats record
     player_id INTEGER NOT NULL,                -- Foreign key linking to Players table
-    health INTEGER DEFAULT 100,                -- Player's health (default 100)
-    energy INTEGER DEFAULT 100,                -- Player's energy level (default 100)
+    health INTEGER DEFAULT 10,                -- Player's health (default 10)
     fighting_skills INTEGER DEFAULT 0,         -- Fighting skill level
     life_skills INTEGER DEFAULT 0,             -- Crafting skill level
     fishing_skills INTEGER DEFAULT 0,          -- Fishing skill level
@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS player_stats (
     searching_skills INTEGER DEFAULT 0,        -- Scouting skill level
     current_location INTEGER DEFAULT 1,       -- Current objective the player is on
     current_rank INTEGER DEFAULT 1,            -- Default to the lowest rank
+    health_cap INTEGER DEFAULT 10,             -- Default to the lowest rank health cap
     FOREIGN KEY (player_id) REFERENCES player(player_id) ON DELETE CASCADE
 );
 
@@ -77,14 +78,14 @@ CREATE TABLE IF NOT EXISTS player_progress (
     FOREIGN KEY (task_id) REFERENCES tasks(task_id) ON DELETE CASCADE         -- Cascade delete
 );
 
-
 CREATE TABLE IF NOT EXISTS items (
     item_id SERIAL PRIMARY KEY,               -- Unique identifier for each item
     item_name TEXT NOT NULL,                  -- Name of the item
     item_location INTEGER NOT NULL CHECK (item_location BETWEEN 0 AND 13), -- Location ID (0 = everywhere, 1-13 = specific locations)
     limit_type TEXT NOT NULL CHECK (limit_type IN ('global', 'individual')), -- Type of limit
-    item_type TEXT, -- Type of item
-    item_limit INTEGER DEFAULT 100            -- Maximum quantity (100 = unlimited)
+    item_type TEXT,                            -- Type of item
+    sell_price INTEGER,                         -- amount of lumins this items sells for (0 = cannot be sold)
+    item_limit INTEGER DEFAULT 100              -- Maximum quantity
 );
 
 CREATE TABLE IF NOT EXISTS task_requirements (
