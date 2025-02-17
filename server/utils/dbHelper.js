@@ -53,17 +53,6 @@ async function updatePlayerStats(playerId, updates) {
     }
 }
 
-// ✅ Fetch item details from the items table
-async function getItemDetails(itemName) {
-    try {
-        const result = await db.query('SELECT * FROM items WHERE item_name = $1', [itemName]);
-        return result.rows.length ? result.rows[0] : null;
-    } catch (error) {
-        console.error('❌ Error fetching item details:', error);
-        return null;
-    }
-}
-
 //search the db for the player or add new
 async function addNewPlayer(username) {
     try {
@@ -111,4 +100,46 @@ async function addNewPlayer(username) {
     }
 }
 
-module.exports = { db, getPlayerId, getPlayerStats, updatePlayerStats, getItemDetails, addNewPlayer};
+// ✅ Fetch item details by exact item name
+async function getItemDetailsByName(itemName) {
+    try {
+        const result = await db.query(
+            'SELECT * FROM items WHERE item_name = $1',
+            [itemName]
+        );
+        return result.rows.length ? result.rows[0] : null;
+    } catch (error) {
+        console.error('❌ Error fetching item by name:', error);
+        return null;
+    }
+}
+
+// ✅ Fetch random item by item type & player location
+async function getItemDetailsByType(playerId, itemType) {
+    try {
+        // Get player's current location
+        const playerResult = await db.query(
+            'SELECT current_location FROM player_stats WHERE player_id = $1',
+            [playerId]
+        );
+        if (!playerResult.rows.length) return null;
+
+        const playerLocation = playerResult.rows[0].current_location;
+
+        // Find an item that matches item_type & is available at the player's location (or globally)
+        const itemResult = await db.query(
+            `SELECT * FROM items 
+             WHERE item_type = $1 
+             AND (item_location = 0 OR item_location = $2) 
+             ORDER BY RANDOM() LIMIT 1`,
+            [itemType, playerLocation]
+        );
+
+        return itemResult.rows.length ? itemResult.rows[0] : null;
+    } catch (error) {
+        console.error('❌ Error fetching item by type:', error);
+        return null;
+    }
+}
+
+module.exports = { db, getPlayerId, getPlayerStats, updatePlayerStats, getItemDetailsByName, getItemDetailsByType, addNewPlayer };

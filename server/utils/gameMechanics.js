@@ -1,4 +1,4 @@
-const { getPlayerId, getPlayerStats, updatePlayerStats, getItemDetails } = require('./dbHelper');
+const { getPlayerId, getPlayerStats, updatePlayerStats, getItemDetailsByName, getItemDetailsByType } = require('./dbHelper');
 const { updateInventory } = require('./inventoryManager');
 
 // ✅ Probability Calculation
@@ -18,13 +18,14 @@ async function skillAttempt(username, skillType, itemType) {
         const playerId = await getPlayerId(username);
         if (!playerId) return `❌ Player not found. Use !play to register.`;
 
-        const stats = await getPlayerStats(playerId); // ✅ Fix: Fetch stats before using them
+        const stats = await getPlayerStats(playerId);
         if (!stats) return `❌ Player stats not found.`;
 
         if (!skillProbability(stats[skillType])) return `❌ You failed to capture anything this time.`;
 
-        const item = await getItemDetails(itemType);
-        if (!item) return `❌ No valid item found.`;
+        // ✅ Fetch an item by type & location
+        const item = await getItemDetailsByType(playerId, itemType);
+        if (!item) return `❌ No valid item found for ${itemType}.`;
 
         await updateInventory(playerId, item.item_name, 1);
         await updatePlayerStats(playerId, { [skillType]: stats[skillType] + 1 });
@@ -42,10 +43,11 @@ async function eatItem(username, itemName) {
         const playerId = await getPlayerId(username);
         if (!playerId) return `❌ Player not found.`;
 
-        const stats = await getPlayerStats(playerId); // ✅ Fix: Fetch stats before using them
+        const stats = await getPlayerStats(playerId);
         if (!stats) return `❌ Player stats not found.`;
 
-        const item = await getItemDetails(itemName);
+        // ✅ Fetch an item by exact name
+        const item = await getItemDetailsByName(itemName);
         if (!item || item.sell_price === 0) return `❌ You cannot eat ${itemName}.`;
 
         if (stats.health >= stats.health_cap) return `❌ You are already at full health.`;
@@ -67,7 +69,7 @@ async function sellItem(username, itemName) {
         const playerId = await getPlayerId(username);
         if (!playerId) return `❌ Player not found.`;
 
-        const item = await getItemDetails(itemName);
+        const item = await getItemDetailsByName(itemName);
         if (!item || item.sell_price === 0) return `❌ You cannot sell ${itemName}.`;
 
         await updateInventory(playerId, itemName, -1);
