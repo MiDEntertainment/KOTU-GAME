@@ -13,7 +13,6 @@ const botAccessToken = process.env.TWITCH_ACCESS_TOKEN; // KotuGuard Token
 const eventSubAccessToken = process.env.TWITCH_EVENTSUB_ACCESS_TOKEN; // QuietGamerGirl Token
 const channelName = process.env.TWITCH_CHANNEL_NAME;
 
-
 async function handleSkillRedemption(chatClient, userName, skillType, itemType) {
     try {
         const resultMessage = await skillAttempt(userName, skillType, itemType);
@@ -87,8 +86,25 @@ async function startTwitchChatListener() {
                 
                 if (message.toLowerCase() === '!play') {
                     console.log(`🎮 ${user} used !play command. Attempting to add player...`);
-                    const responseMessage = await addNewPlayer(user);
-                    chatClient.say(channel, responseMessage);
+                
+                    try {
+                        // Fetch Twitch User ID using eventSubApiClient
+                        const twitchUser = await eventSubApiClient.users.getUserByName(user);
+                        if (!twitchUser) {
+                            chatClient.say(channel, `❌ Error: Unable to fetch Twitch ID for @${user}.`);
+                            return;
+                        }
+                
+                        const twitchId = twitchUser.id;
+                        console.log(`✅ Fetched Twitch ID for ${user}: ${twitchId}`);
+                
+                        // Pass twitchId to addNewPlayer
+                        const responseMessage = await addNewPlayer(user, twitchId);
+                        chatClient.say(channel, responseMessage);
+                    } catch (error) {
+                        console.error(`❌ Error fetching Twitch ID for ${user}:`, error);
+                        chatClient.say(channel, `❌ An error occurred while adding you to the game, @${user}.`);
+                    }
                 }
             }
         });
@@ -101,4 +117,4 @@ async function startTwitchChatListener() {
     }
 }
 
-module.exports = { startTwitchChatListener, eventSubApiClient };
+module.exports = { startTwitchChatListener};

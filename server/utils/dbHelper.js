@@ -1,6 +1,5 @@
 require('dotenv').config();
 const { Pool } = require('pg');
-const { eventSubApiClient } = require('../twitchApp/twitchChatListener');
 
 // ✅ PostgreSQL Database Connection
 const db = new Pool({
@@ -55,7 +54,7 @@ async function updatePlayerStats(playerId, updates) {
 }
 
 //search the db for the player or add new
-async function addNewPlayer(username) {
+async function addNewPlayer(username, twitchId) {
     try {
         // Check if the player already exists
         const playerId = await getPlayerId(username);
@@ -63,17 +62,10 @@ async function addNewPlayer(username) {
             return `@${username}, you are already on your journey. Use the channel rewards to play the game and download the Twitch extension to see your stats.`;
         }
 
-        // Fetch Twitch user ID
-        const user = await eventSubApiClient.users.getUserByName(username);
-        if (!user) {
-            return `❌ Error: Unable to fetch Twitch ID for @${username}.`;
-        }
-        const twitchId = user.id;
-
         // Insert new player into the player table
         const newPlayer = await db.query(
             `INSERT INTO player (twitch_username, join_date, twitch_id) 
-             VALUES ($1, NOW(), $2)`,
+             VALUES ($1, NOW(), $2) RETURNING player_id`,
             [username, twitchId]
         );
 
