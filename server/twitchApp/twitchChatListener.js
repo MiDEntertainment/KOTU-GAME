@@ -65,31 +65,27 @@ async function startTwitchChatListener() {
         // **EventSub WebSocket Listener for Channel Point Redemptions**
         //need to fix this so that eat and sell replace the item with what is type in chat
         const listener = new EventSubWsListener({ apiClient: eventSubApiClient });
-        const pendingUserActions = new Map(); // Stores pending users waiting to provide an item name
         listener.onChannelRedemptionAdd(userId, async (e) => {
             const rewardTitle = e.rewardTitle.toLowerCase();
-        
+            const userInput = e.input?.trim(); // ✅ Retrieve user input
+
             if (rewardTitle === 'hunt') {
                 handleSkillRedemption(chatClient, e.userName, 'hunting_skills', 'Animal');
             } else if (rewardTitle === 'search') {
                 handleSkillRedemption(chatClient, e.userName, 'searching_skills', 'iQuest');
-            } else if (rewardTitle === 'eat' || rewardTitle === 'sell') {
-                pendingUserActions.set(e.userName.toLowerCase(), rewardTitle); // Store pending action
+            } else if (rewardTitle === 'eat' && userInput) {
+                handleEatCommand(chatClient, e.userName, userInput);
+            } else if (rewardTitle === 'sell' && userInput) {
+                handleSellCommand(chatClient, e.userName, userInput);
+            } else {
+                chatClient.say(`#${channelName}`, `@${e.userName} Invalid or missing input for redemption.`);
             }
         });
 
         // Listen for chat messages
         chatClient.onMessage(async (channel, user, message) => {
             console.log(`💬 ${user}: ${message}`);
-            if (pendingUserActions.has(user.toLowerCase())) {
-                const action = pendingUserActions.get(user.toLowerCase());
-                pendingUserActions.delete(user.toLowerCase()); // Remove from pending queue
-                if (action === 'eat') {
-                    handleEatCommand(chatClient, user, message.trim().toLowerCase());
-                } else if (action === 'sell') {
-                    handleSellCommand(chatClient, user, message.trim().toLowerCase());
-                }
-            } else if (message.startsWith('!')) {
+            if (message.startsWith('!')) {
                 if (message.toLowerCase() === '!play') {
                     try {
                         // Fetch Twitch User ID using eventSubApiClient
@@ -103,7 +99,6 @@ async function startTwitchChatListener() {
                 
                         // Pass twitchId to addNewPlayer
                         const responseMessage = await addNewPlayer(user, twitchId);
-                        chatClient.say(`#${channelName}`, `@${userName}, ${responseMessage}`);
 
                     } catch (error) {
                         console.log(responseMessage);
