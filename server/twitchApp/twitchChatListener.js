@@ -67,14 +67,24 @@ async function startTwitchChatListener() {
         const listener = new EventSubWsListener({ apiClient: eventSubApiClient });
         listener.onChannelRedemptionAdd(userId, async (e) => {
             const rewardTitle = e.rewardTitle.toLowerCase();
+            const userInput = e.userInput?.trim().toLowerCase(); // Extract user-inputted item name
+        
             if (rewardTitle === 'hunt') {
                 handleSkillRedemption(chatClient, e.userName, 'hunting_skills', 'Animal');
             } else if (rewardTitle === 'search') {
                 handleSkillRedemption(chatClient, e.userName, 'searching_skills', 'iQuest');
             } else if (rewardTitle === 'eat') {
-                handleEatCommand(chatClient, e.userName, 'fish');
+                if (!userInput) {
+                    chatClient.say(`#${channelName}`, `@${e.userName}, you need to specify an item to eat!`);
+                    return;
+                }
+                handleEatCommand(chatClient, e.userName, userInput);
             } else if (rewardTitle === 'sell') {
-                handleSellCommand(chatClient, e.userName, 'fish');
+                if (!userInput) {
+                    chatClient.say(`#${channelName}`, `@${e.userName}, you need to specify an item to sell!`);
+                    return;
+                }
+                handleSellCommand(chatClient, e.userName, userInput);
             }
         });
 
@@ -95,6 +105,7 @@ async function startTwitchChatListener() {
                 
                         // Pass twitchId to addNewPlayer
                         const responseMessage = await addNewPlayer(user, twitchId);
+                        chatClient.say(`#${channelName}`, `@${userName}, ${responseMessage}`);
 
                     } catch (error) {
                         console.log(responseMessage);
