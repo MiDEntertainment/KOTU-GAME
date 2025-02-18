@@ -2,7 +2,7 @@ const { ChatClient } = require('@twurple/chat');
 const { ApiClient } = require('@twurple/api');
 const { StaticAuthProvider } = require('@twurple/auth');
 const { EventSubWsListener } = require('@twurple/eventsub-ws');
-const { skillAttempt, eatItem, sellItem} = require('../utils/gameMechanics');
+const { skillAttempt, eatItem, sellItem, travelItem} = require('../utils/gameMechanics');
 const { addNewPlayer} = require('../utils/dbHelper');
 require('dotenv').config();
 
@@ -22,21 +22,28 @@ async function handleSkillRedemption(chatClient, userName, skillType, itemType) 
     }
 }
 
-async function handleEatCommand(chatClient, userName, itemName) {
+async function handleInputRedemption(chatClient, userName, commandType, userInput) {
     try {
-        const resultMessage = await eatItem(userName, itemName);
-        chatClient.say(`#${channelName}`, `@${userName} ${resultMessage}`);
-    } catch (error) {
-        console.error(`❌ Error processing eat command for ${userName}:`, error);
-    }
-}
+        let resultMessage;
+        
+        switch (commandType.toLowerCase()) {
+            case 'eat':
+                resultMessage = await eatItem(userName, userInput);
+                break;
+            case 'sell':
+                resultMessage = await sellItem(userName, userInput);
+                break;
+            case 'travel':
+                resultMessage = await travelItem(userName, userInput);
+                break;
+            default:
+                resultMessage = `❌ Invalid command: ${commandType}`;
+                break;
+        }
 
-async function handleSellCommand(chatClient, userName, itemName) {
-    try {
-        const resultMessage = await sellItem(userName, itemName);
         chatClient.say(`#${channelName}`, `@${userName} ${resultMessage}`);
     } catch (error) {
-        console.error(`❌ Error processing sell command for ${userName}:`, error);
+        console.error(`❌ Error processing ${commandType} command for ${userName}:`, error);
     }
 }
 
@@ -73,10 +80,8 @@ async function startTwitchChatListener() {
                 handleSkillRedemption(chatClient, e.userName, 'hunting_skills', 'Animal');
             } else if (rewardTitle === 'search') {
                 handleSkillRedemption(chatClient, e.userName, 'searching_skills', 'iQuest');
-            } else if (rewardTitle === 'eat' && userInput) {
-                handleEatCommand(chatClient, e.userName, userInput);
-            } else if (rewardTitle === 'sell' && userInput) {
-                handleSellCommand(chatClient, e.userName, userInput);
+            } else if (rewardTitle === 'eat' || rewardTitle === 'sell' || rewardTitle === 'travel' && userInput) {
+                handleInputRedemption(chatClient, e.userName, rewardTitle, userInput);
             } else {
                 chatClient.say(`#${channelName}`, `@${e.userName} Invalid or missing input for redemption.`);
             }

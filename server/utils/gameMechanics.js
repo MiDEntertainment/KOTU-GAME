@@ -41,7 +41,7 @@ async function skillAttempt(username, skillType, itemType) {
 async function eatItem(username, itemName) {
     try {
         const playerId = await getPlayerId(username);
-        if (!playerId) return `❌ Player not found.`;
+        if (!playerId) return `❌ You need to register first. Use !play to join the game.`;
 
         const stats = await getPlayerStats(playerId);
         if (!stats) return `❌ Player stats not found.`;
@@ -67,7 +67,7 @@ async function eatItem(username, itemName) {
 async function sellItem(username, itemName) {
     try {
         const playerId = await getPlayerId(username);
-        if (!playerId) return `❌ Player not found.`;
+        if (!playerId) return `❌ You need to register first. Use !play to join the game.`;
 
         const item = await getItemDetailsByName(itemName);
         if (!item || item.sell_price === 0) return `❌ You cannot sell ${itemName}.`;
@@ -82,4 +82,27 @@ async function sellItem(username, itemName) {
     }
 }
 
-module.exports = { skillAttempt, eatItem, sellItem };
+// ✅ Travel
+async function travelItem(username, locationNumber) {
+    try {
+        const playerId = await getPlayerId(username);
+        if (!playerId) return `❌ You need to register first. Use !play to join the game.`;
+
+        const stats = await getPlayerStats(playerId);
+        if (!stats) return `❌ Player stats not found.`;
+
+        //Validate the input
+        if (isNaN(locationNumber) || locationNumber < 1 || locationNumber > 13) {
+            return `❌ Invalid location. Please enter a number between 1 and 13.`;
+        }
+
+        // Update the player's current location
+        await updatePlayerStats(playerId, { current_location: locationNumber })
+
+        return `✅ You have traveled to location ${newLocation}!`;
+    } catch (error) {
+        console.error(`❌ Error processing travel command for ${userName}:`, error);
+        return `❌ rror processing travel command: ${error.message}`;
+    }
+}
+module.exports = { skillAttempt, eatItem, sellItem, travelItem};
