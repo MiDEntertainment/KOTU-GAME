@@ -99,9 +99,9 @@ async function travelItem(username, locationNumber) {
         // Update the player's current location
         await updatePlayerStats(playerId, { current_location: locationNumber })
 
-        return `✅ You have traveled to location ${newLocation}!`;
+        return `✅ You have traveled to location ${locationNumber}!`;
     } catch (error) {
-        console.error(`❌ Error processing travel command for ${userName}:`, error);
+        console.error(`❌ Error processing travel command for ${username}:`, error);
         return `❌ rror processing travel command: ${error.message}`;
     }
 }
