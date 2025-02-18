@@ -73,8 +73,8 @@ async function addNewPlayer(username, twitchId) {
 
         // Initialize player stats
         await db.query(
-            `INSERT INTO player_stats (player_id, health, fighting_skills, life_skills, fishing_skills, hunting_skills, searching_skills, current_location, current_rank, health_cap)
-             VALUES ($1, 10, 0, 0, 0, 0, 0, 1, 1, 10)`,
+            `INSERT INTO player_stats (player_id)
+             VALUES ($1)`,
             [newPlayerId]
         );
 

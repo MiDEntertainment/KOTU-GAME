@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 // ✅ Update Stats
                 document.getElementById("health").textContent = playerData.health ?? "N/A";
-                document.getElementById("fighting_skills").textContent = playerData.fighting_skills ?? "N/A";
+                document.getElementById("weapon_level").textContent = playerData.weapon_level ?? "N/A";
                 document.getElementById("life_skills").textContent = playerData.life_skills ?? "N/A";
                 document.getElementById("hunting_skills").textContent = playerData.hunting_skills ?? "N/A";
                 document.getElementById("searching_skills").textContent = playerData.searching_skills ?? "N/A";

@@ -1,4 +1,4 @@
-const { db, skillProbability, getPlayerId, updatePlayerStats, getItemDetails, getInventory, updateInventory, skillAttempt, eatItem, sellItem} = require('../server/utils/gameMechanics');
+const { db, skillProbability, getPlayerId, updatePlayerStats, getItemDetails, getInventory, updateInventory, skillAttempt, eatItem, sellItem, fightEnemy} = require('../server/utils/gameMechanics');
 
 // //Unit tests for skillAttempt functions. Check amount in DB before each test
 // (async () => {
@@ -23,7 +23,7 @@ const { db, skillProbability, getPlayerId, updatePlayerStats, getItemDetails, ge
 
 //         //Test skillAttempt function
 //         console.log("🎯 Running tests for skillAttempt>> gameMechanics.js\n");
-//         console.log(await skillAttempt('quietgamergirl', 'fishing_skills', 'Fish'));
+//         console.log(await skillAttempt('quietgamergirl', 'searching_skills', 'iQuest'));
 //     } catch (error) {
 //         console.error("❌ Error during testing:", error);
 //     }
@@ -34,39 +34,48 @@ const { db, skillProbability, getPlayerId, updatePlayerStats, getItemDetails, ge
 
 // (async () => {
 
-    // ✅ 1. Test successful eating
-    console.log('✅ 1. Test successful eating');
-    console.log(await eatItem('quietgamergirl', 'fish', 1)); // Expected: Gains health, updates inventory
+//     // ✅ 1. Test successful eating
+//     console.log('✅ 1. Test successful eating');
+//     console.log(await eatItem('quietgamergirl', 'fish', 1)); // Expected: Gains health, updates inventory
 
-//     // ❌ 2. Test eating item not in inventory
-//     console.log('❌ 2. Test eating item not in inventory');
-//     console.log(await eatItem('quietgamergirl', 'NonExistentItem', 1)); // Expected: Error message
+    // // ❌ 2. Test eating item not in inventory
+    // console.log('❌ 2. Test eating item not in inventory');
+    // console.log(await eatItem('quietgamergirl', 'NonExistentItem', 1)); // Expected: Error message
 
-//     // ❌ 3. Test eating more than available
-//     console.log('❌ 3. Test eating more than available');
-//     console.log(await eatItem('quietgamergirl', 'Common Fish', 100)); // Expected: Error about insufficient quantity
+    // // ❌ 3. Test eating more than available
+    // console.log('❌ 3. Test eating more than available');
+    // console.log(await eatItem('quietgamergirl', 'Common Fish', 100)); // Expected: Error about insufficient quantity
 
-//     // ❌ 4. Test eating item with sell price = 0
-//     console.log('❌ 4. Test eating item with sell price = 0');
-//     console.log(await eatItem('quietgamergirl', 'Lumins', 1)); // Expected: Cannot eat this item
+    // // ❌ 4. Test eating item with sell price = 0
+    // console.log('❌ 4. Test eating item with sell price = 0');
+    // console.log(await eatItem('quietgamergirl', 'Lumins', 1)); // Expected: Cannot eat this item
 
-//     // ✅ 5. Test successful selling
-//     console.log('✅ 5. Test successful selling');
-//     console.log(await sellItem('quietgamergirl', 'Common Rabbit', 1)); // Expected: Gains Lumins, updates inventory
+    // // ✅ 5. Test successful selling
+    // console.log('✅ 5. Test successful selling');
+    // console.log(await sellItem('quietgamergirl', 'Common Rabbit', 1)); // Expected: Gains Lumins, updates inventory
 
-//     // ❌ 6. Test selling more than the current limit
-//     console.log('❌ 6. Test selling more than the current limit');
-//     console.log(await sellItem('quietgamergirl', 'Common Rabbit', 10)); // Expected: Error about exceeding Lumins inventory limit
+    // // ❌ 6. Test selling more than the current limit
+    // console.log('❌ 6. Test selling more than the current limit');
+    // console.log(await sellItem('quietgamergirl', 'Common Rabbit', 10)); // Expected: Error about exceeding Lumins inventory limit
 
-//     // ❌ 7. Test selling item not in inventory
-//     console.log('❌ 7. Test selling item not in inventory');
-//     console.log(await sellItem('quietgamergirl', 'Apple', 1)); // Expected: Error message
+    // // ❌ 7. Test selling item not in inventory
+    // console.log('❌ 7. Test selling item not in inventory');
+    // console.log(await sellItem('quietgamergirl', 'Apple', 1)); // Expected: Error message
 
-//     // ❌ 8. Test selling more than available
-//     console.log('❌ 8. Test selling more than available');
-//     console.log(await sellItem('quietgamergirl', 'Common Rabbit', 100)); // Expected: Error about insufficient quantity
+    // // ❌ 8. Test selling more than available
+    // console.log('❌ 8. Test selling more than available');
+    // console.log(await sellItem('quietgamergirl', 'Common Rabbit', 100)); // Expected: Error about insufficient quantity
 
-//     // ❌ 9. Test selling item with sell price = 0
-//     console.log('❌ 9. Test selling item with sell price = 0');
-//     console.log(await sellItem('quietgamergirl', 'XP', 1)); // Expected: Cannot sell this item
+    // // ❌ 9. Test selling item with sell price = 0
+    // console.log('❌ 9. Test selling item with sell price = 0');
+    // console.log(await sellItem('quietgamergirl', 'XP', 1)); // Expected: Cannot sell this item
+// })();
+
+// // test for fight
+
+// (async () => {
+
+//     // ✅ 1. Test successful fighting
+//     console.log('✅ 1. Test successful fighting');
+//     console.log(await fightEnemy('quietgamergirl', 'enemy') ); // Expected: minus health, updates inventory with XP
 // })();

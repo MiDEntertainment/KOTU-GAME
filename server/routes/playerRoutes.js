@@ -1,21 +1,6 @@
 const express = require('express');
 const router = express.Router();
-
-// ✅ Helper function to get player ID by Twitch username
-async function getPlayerId(req, username) {
-    try {
-        const result = await req.db.query('SELECT player_id FROM player WHERE twitch_username = $1', [username]);
-
-        if (result.rows.length === 0) {
-            return null; // Player not found
-        }
-
-        return result.rows[0].player_id;
-    } catch (error) {
-        console.error('❌ Error fetching player ID:', error);
-        return null; // Handle errors gracefully
-    }
-}
+const { getPlayerId } = require('../utils/dbHelper');
 
 // Fetch player details by Twitch username
 router.get('/player/:username', async (req, res) => {
@@ -43,7 +28,7 @@ router.get('/player/:username/stats', async (req, res) => {
         const { username } = req.params;
 
         // ✅ Use helper function to get player ID
-        const playerId = await getPlayerId(req, username);
+        const playerId = await getPlayerId(username);
 
         if (!playerId) {
             return res.status(404).json({ error: 'Player not found' });
