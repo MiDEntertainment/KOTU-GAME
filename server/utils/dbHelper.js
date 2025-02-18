@@ -58,7 +58,7 @@ async function addNewPlayer(username, twitchId) {
     try {
         // Check if the player already exists
         const playerId = await getPlayerId(username);
-        if (!playerId) {
+        if (playerId) {
             return `@${username}, you are already on your journey. Use the channel rewards to play the game and download the Twitch extension to see your stats.`;
         }
 
