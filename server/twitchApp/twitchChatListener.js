@@ -82,28 +82,22 @@ async function startTwitchChatListener() {
         chatClient.onMessage(async (channel, user, message) => {
             console.log(`💬 ${user}: ${message}`);
             if (message.startsWith('!')) {
-                console.log(`🔹 Detected command: ${message}`);
-                
                 if (message.toLowerCase() === '!play') {
-                    console.log(`🎮 ${user} used !play command. Attempting to add player...`);
-                
                     try {
                         // Fetch Twitch User ID using eventSubApiClient
                         const twitchUser = await eventSubApiClient.users.getUserByName(user);
                         if (!twitchUser) {
-                            chatClient.say(channel, `❌ Error: Unable to fetch Twitch ID for @${user}.`);
+                            console.log(`❌ Error: Unable to fetch Twitch ID for @${user}.`);
                             return;
                         }
                 
                         const twitchId = twitchUser.id;
-                        console.log(`✅ Fetched Twitch ID for ${user}: ${twitchId}`);
                 
                         // Pass twitchId to addNewPlayer
                         const responseMessage = await addNewPlayer(user, twitchId);
-                        chatClient.say(channel, responseMessage);
+
                     } catch (error) {
-                        console.error(`❌ Error fetching Twitch ID for ${user}:`, error);
-                        chatClient.say(channel, `❌ An error occurred while adding you to the game, @${user}.`);
+                        console.log(responseMessage);
                     }
                 }
             }
