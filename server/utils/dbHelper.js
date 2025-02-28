@@ -106,6 +106,20 @@ async function getItemDetailsByName(itemName) {
     }
 }
 
+// ✅ Fetch item details by exact item name
+async function getItemDetailsByID(itemID) {
+    try {
+        const result = await db.query(
+            'SELECT * FROM items WHERE item_id = $1',
+            [itemID]
+        );
+        return result.rows.length ? result.rows[0] : null;
+    } catch (error) {
+        console.error('❌ Error fetching item by name:', error);
+        return null;
+    }
+}
+
 // ✅ Fetch random item by item type & player location
 async function getItemDetailsByType(playerId, itemType) {
     try {
@@ -134,4 +148,24 @@ async function getItemDetailsByType(playerId, itemType) {
     }
 }
 
-module.exports = { db, getPlayerId, getPlayerStats, updatePlayerStats, getItemDetailsByName, getItemDetailsByType, addNewPlayer };
+// ✅ Probability of wining a fight
+function winChance(fightLevel, enemyDifficulty) {
+    try {
+    const randomBonus = Math.floor(Math.random() * 10) + 1; // Random bonus between 1-10
+
+    // Prevent division by zero
+    if (enemyDifficulty === 0) return 90.0;
+
+    let winChance = ((fightLevel + randomBonus) / enemyDifficulty) * 100;
+
+    // Ensure winChance falls within the 35% - 90% range
+    return Math.min(Math.max(winChance, 35), 90);
+
+    } catch (error) {
+        console.error('❌ error processing winchance:', error);
+        return `❌ error processing winchance.`;
+    }
+    
+}
+
+module.exports = { db, getPlayerId, getPlayerStats, updatePlayerStats, getItemDetailsByName, getItemDetailsByType, addNewPlayer, winChance, getItemDetailsByID };

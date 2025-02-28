@@ -1,4 +1,4 @@
-const { getPlayerId, getPlayerStats, updatePlayerStats, getItemDetailsByName, getItemDetailsByType } = require('./dbHelper');
+const { getPlayerId, getPlayerStats, updatePlayerStats, getItemDetailsByName, getItemDetailsByType, winChance, getItemDetailsByID } = require('./dbHelper');
 const { updateInventory } = require('./inventoryManager');
 
 // ✅ Probability Calculation
@@ -10,23 +10,6 @@ function skillProbability(skillLevel) {
                    thresholds[3];
 
     return Math.random() * 100 < threshold;
-}
-
-// ✅ Probability Calculation
-function fightProbability(fightLevel) {
-    const fthresholds = [50, 55, 60, 65, 70, 75, 80, 85, 90, 99];
-    let fthreshold = fightLevel <= 10 ? fthresholds[0] :
-                   fightLevel <= 20 ? fthresholds[1] :
-                   fightLevel <= 30 ? fthresholds[2] :
-                   fightLevel <= 40 ? fthresholds[3] :
-                   fightLevel <= 50 ? fthresholds[4] :
-                   fightLevel <= 60 ? fthresholds[5] :
-                   fightLevel <= 70 ? fthresholds[6] :
-                   fightLevel <= 80 ? fthresholds[7] :
-                   fightLevel <= 90 ? fthresholds[8] :
-                   fthresholds[9];
-
-    return Math.random() * 100 < fthreshold;
 }
 
 // ✅ Attempt a skill-based action
@@ -50,8 +33,8 @@ async function skillAttempt(username, skillType, itemType) {
         // ✅ Check if skillType is 'search' and item is 'enemy'
         console.log('Check if skillType is search and item is enemy');
         if (skillType === "searching_skills" && item.item_name === "enemy") {
-            console.log('fighting the enemy');
-            return fightEnemy(username, item.item_name);
+            console.log('fighting the enemy'+item.item_id);
+            return fightEnemy(username, item.item_id);
         }
 
         console.log('updating inventory');
@@ -128,49 +111,53 @@ async function travelItem(username, locationNumber) {
         return `✅ You have traveled to location ${locationNumber}!`;
     } catch (error) {
         console.error(`❌ Error processing travel command for ${username}:`, error);
-        return `❌ rror processing travel command: ${error.message}`;
+        return `❌ Error processing travel command: ${error.message}`;
     }
 }
 
 // ✅ Fight
-async function fightEnemy(username, enemyName) {
+async function fightEnemy(username, enemyID) {
     try {
         const playerId = await getPlayerId(username);
-        if (!playerId) return `❌ Player not found.`;
+        if (!playerId) return `❌ Player not found. Use !play to register.`;
 
         // Fetch player stats
         const stats = await getPlayerStats(playerId);
         if (!stats) return `❌ Player stats not found.`;
-        
-        // Fetch enemy details from items table
-        const enemy = await getItemDetailsByName(enemyName);
-        if (!enemy) return `❌ Enemy '${enemyName}' not found.`;
-        
-        const weaponLevel = stats.weapon_level;
-        const enemyDifficulty = enemy.item_limit; // Difficulty is stored as item_limit
-        
-        // Determine fight outcome
-        if (fightProbability(weaponLevel)) {
-            // Victory: Award XP equal to difficulty level
+
+        // Fetch enemy details
+        const enemy = await getItemDetailsByID(enemyID);
+        if (!enemy) return `❌ Enemy '${enemyID}' not found.`;
+
+        const fightLevel = stats.weapon_level;
+        const enemyDifficulty = enemy.item_limit; // Using item_limit to represent difficulty
+
+        // Calculate win probability
+        const winProbability = winChance(fightLevel, enemyDifficulty);
+        const roll = Math.random() * 100;
+
+        if (roll < winProbability) {
+            // Victory: Award XP equal to enemy difficulty
             await updateInventory(playerId, 'xp', enemyDifficulty);
-            return `✅ You defeated ${enemyName} and earned ${enemyDifficulty} XP!`;
+            return `✅ You defeated the enemy and earned ${enemyDifficulty} XP!`;
         } else {
             // Defeat: Lose 1 health
             const newHealth = stats.health - 1;
             if (newHealth <= 0) {
                 // Player dies: Lose all lumins
-                await updatePlayerStats(playerId, { health: 0 });
-                await updateInventory(playerId, 'lumins', -99999); // Remove all lumins
-                return `💀 You were defeated by ${enemyName} and lost all your lumins! Visit the healer to recover.`;
+                await updatePlayerStats(playerId, { health: 10 });
+                await updateInventory(playerId, 'lumins', -500); // Remove 500 lumins
+                return `💀 You died lost 500 lumins! Check on your health.`;
             } else {
                 // Player survives but takes damage
                 await updatePlayerStats(playerId, { health: newHealth });
-                return `⚠️ You failed to defeat ${enemyName} and lost 1 health! Consider upgrading your weapon at the tavern.`;
+                return `⚠️ You failed to defeat the enemy and lost 1 health! Consider upgrading your weapon at the tavern.`;
             }
         }
     } catch (error) {
         console.error('❌ Error processing fight:', error);
-        return `❌ An error occurred.`;
+        return `❌ An error occurred during combat.`;
     }
 }
-module.exports = { skillAttempt, eatItem, sellItem, travelItem, fightEnemy};
+
+module.exports = { skillAttempt, eatItem, sellItem, travelItem, fightEnemy, skillProbability};
