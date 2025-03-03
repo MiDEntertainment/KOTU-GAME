@@ -1,3 +1,4 @@
+const { StaticAuthProvider } = require('@twurple/auth');
 const { ChatClient } = require('@twurple/chat');
 const { ApiClient } = require('@twurple/api');
 const { EventSubWsListener } = require('@twurple/eventsub-ws');
@@ -6,10 +7,8 @@ const { addNewPlayer } = require('../utils/dbHelper');
 const { getAccessToken, checkTokenExpiration } = require('../twitchApp/refreshTokens');
 
 require('dotenv').config();
-
-const clientId = process.env.TWITCH_CLIENT_ID;
-const botUsername = process.env.TWITCH_BOT_USERNAME;
 const channelName = process.env.TWITCH_CHANNEL_NAME;
+const clientId = process.env.TWITCH_CLIENT_ID;
 
 let chatClient, eventSubApiClient, botApiClient, listener;
 
@@ -19,25 +18,29 @@ let chatClient, eventSubApiClient, botApiClient, listener;
 async function setupTwitchClients() {
     try {
         const chatAccessToken = await getAccessToken('chat');
-        console.log(chatAccessToken);
         const eventSubAccessToken = await getAccessToken('eventsub');
-        console.log(eventSubAccessToken);
+
         if (!chatAccessToken || !eventSubAccessToken) throw new Error("❌ Missing access tokens.");
 
-        botApiClient = new ApiClient({ authProvider: chatAccessToken });
-        eventSubApiClient = new ApiClient({ authProvider: eventSubAccessToken });
+        // ✅ Correct way to create an AuthProvider
+        const chatAuthProvider = new StaticAuthProvider(clientId, chatAccessToken);
+        const eventSubAuthProvider = new StaticAuthProvider(clientId, eventSubAccessToken);
 
+        // ✅ Pass the correct AuthProvider
+        botApiClient = new ApiClient({ authProvider: chatAuthProvider });
+        eventSubApiClient = new ApiClient({ authProvider: eventSubAuthProvider });
+
+        // ✅ Get the Twitch user ID properly
         const user = await eventSubApiClient.users.getUserByName(channelName);
         if (!user) throw new Error(`❌ Failed to fetch Twitch User ID for ${channelName}`);
-        const userId = user.id;
 
-        chatClient = new ChatClient({ authProvider: chatAccessToken, channels: [channelName] });
+        chatClient = new ChatClient({ authProvider: chatAuthProvider, channels: [channelName] });
         chatClient.connect();
 
         listener = new EventSubWsListener({ apiClient: eventSubApiClient });
         listener.start();
 
-        return { userId };
+        return { userId: user.id };
     } catch (error) {
         console.error('❌ Error setting up Twitch clients:', error);
         return null;
@@ -53,12 +56,14 @@ async function startTwitchChatListener() {
         if (!clients) return;
 
         chatClient.onMessage(async (channel, user, message) => {
-            if (message.toLowerCase() === '!play') {
-                try {
-                    const twitchUser = await eventSubApiClient.users.getUserByName(user);
-                    if (twitchUser) await addNewPlayer(user, twitchUser.id);
-                } catch (error) {
-                    console.log(`❌ Error adding new player: ${error.message}`);
+            if (message.startsWith('!')) {
+                if (message.toLowerCase() === '!play') {
+                    try {
+                        const twitchUser = await eventSubApiClient.users.getUserByName(user);
+                        if (twitchUser) await addNewPlayer(user, twitchUser.id);
+                    } catch (error) {
+                        console.log(`❌ Error adding new player: ${error.message}`);
+                    }
                 }
             }
         });
