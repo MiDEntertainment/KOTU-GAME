@@ -69,37 +69,41 @@ async function startTwitchChatListener() {
         });
 
         listener.onChannelRedemptionAdd(clients.userId, async (e) => {
-            const rewardTitle = e.rewardTitle.toLowerCase();
-            const userInput = e.input?.trim();
-
-            const resultMessage = 'capturing';
-            
-
-            if (rewardTitle === 'hunt') {
-                resultMessage = await skillAttempt(e.userName, 'hunting_skills', 'Animal');
-            } else if (rewardTitle === 'search') {
-                resultMessage = await skillAttempt(e.userName, 'searching_skills', 'iQuest');
-            } else if (['eat', 'sell', 'travel'].includes(rewardTitle) && userInput) {
-                switch (rewardTitle) {
-                    case 'eat':
-                        resultMessage = await eatItem(userName, userInput);
-                        break;
-                    case 'sell':
-                        resultMessage = await sellItem(userName, userInput);
-                        break;
-                    case 'travel':
-                        resultMessage = await travelItem(userName, userInput);
-                        break;
-                    default:
-                        resultMessage = `❌ Invalid command: ${commandType}`;
-                        break;
+            try {
+                const rewardTitle = e.rewardTitle.toLowerCase();
+                const userInput = e.input?.trim();
+        
+                let resultMessage = 'capturing';  // ✅ Use `let` instead of `const`
+        
+                if (rewardTitle === 'hunt') {
+                    resultMessage = await skillAttempt(e.userName, 'hunting_skills', 'Animal');
+                } else if (rewardTitle === 'search') {
+                    resultMessage = await skillAttempt(e.userName, 'searching_skills', 'iQuest');
+                } else if (['eat', 'sell', 'travel'].includes(rewardTitle) && userInput) {
+                    switch (rewardTitle) {
+                        case 'eat':
+                            resultMessage = await eatItem(e.userName, userInput);
+                            break;
+                        case 'sell':
+                            resultMessage = await sellItem(e.userName, userInput);
+                            break;
+                        case 'travel':
+                            resultMessage = await travelItem(e.userName, userInput);
+                            break;
+                        default:
+                            resultMessage = `❌ Invalid command: ${rewardTitle}`;
+                            break;
+                    }
+                } else {
+                    chatClient.say(`#${channelName}`, `@${e.userName} Invalid or missing input for redemption.`);
+                    return;
                 }
         
-            } else {
-                chatClient.say(`#${channelName}`, `@${e.userName} Invalid or missing input for redemption.`);
+                chatClient.say(`#${channelName}`, `@${e.userName}, ${resultMessage}`);
+            } catch (error) {
+                console.error('❌ Error in redemption handler:', error);
+                chatClient.say(`#${channelName}`, `@${e.userName} An error occurred while processing your request.`);
             }
-
-            chatClient.say(`#${channelName}`, `@${userName}, ${resultMessage}`);
         });
 
         console.log(`🎉 Twitch Chat Listener & EventSub Ready!`);
