@@ -27,17 +27,12 @@ async function skillAttempt(username, skillType, itemType) {
         const item = await getItemDetailsByType(playerId, itemType);
         if (!item) return `❌ No valid item found for ${itemType}.`;
     
-        console.log('updating player stats');
         await updatePlayerStats(playerId, { [skillType]: stats[skillType] + 1 });
 
         // ✅ Check if skillType is 'search' and item is 'enemy'
-        console.log('Check if skillType is search and item is enemy');
         if (skillType === "searching_skills" && item.item_name === "enemy") {
-            console.log('fighting the enemy'+item.item_id);
             return fightEnemy(username, item.item_id);
         }
-
-        console.log('updating inventory');
         const inventoryResponse = await updateInventory(playerId, item.item_name, 1);
         return inventoryResponse;
     } catch (error) {
@@ -139,7 +134,7 @@ async function fightEnemy(username, enemyID) {
         if (roll < winProbability) {
             // Victory: Award XP equal to enemy difficulty
             await updateInventory(playerId, 'xp', enemyDifficulty);
-            return `✅ You defeated the enemy and earned ${enemyDifficulty} XP!`;
+            return `ENEMY ATTACK .... ENEMY ATTACK .... ✅ You defeated the enemy and earned ${enemyDifficulty} XP!`;
         } else {
             // Defeat: Lose 1 health
             const newHealth = stats.health - 1;
@@ -147,11 +142,11 @@ async function fightEnemy(username, enemyID) {
                 // Player dies: Lose all lumins
                 await updatePlayerStats(playerId, { health: 10 });
                 await updateInventory(playerId, 'lumins', -500); // Remove 500 lumins
-                return `💀 You died lost 500 lumins! Check on your health.`;
+                return `ENEMY ATTACK .... ENEMY ATTACK .... 💀 You died lost 500 lumins! Check on your health.`;
             } else {
                 // Player survives but takes damage
                 await updatePlayerStats(playerId, { health: newHealth });
-                return `⚠️ You failed to defeat the enemy and lost 1 health! Consider upgrading your weapon at the tavern.`;
+                return `ENEMY ATTACK .... ENEMY ATTACK .... ⚠️ You failed to defeat the enemy and lost 1 health! Consider upgrading your weapon at the tavern.`;
             }
         }
     } catch (error) {

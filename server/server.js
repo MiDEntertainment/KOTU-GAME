@@ -6,6 +6,7 @@ const http = require('http'); // ✅ Use HTTP for Render
 const https = require('https');
 require('dotenv').config();
 const { Pool } = require('pg');
+
 const playerRoutes = require('./routes/playerRoutes'); // Import player routes
 const { startTwitchChatListener } = require('./twitchApp/twitchChatListener');
 

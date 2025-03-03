@@ -94,3 +94,10 @@ CREATE TABLE IF NOT EXISTS task_requirements (
     quantity_required INTEGER DEFAULT 1,-- How many of this item are needed
     FOREIGN KEY (task_id) REFERENCES tasks(task_id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS tokens (
+    id SERIAL PRIMARY KEY,
+    token_type TEXT NOT NULL UNIQUE CHECK (token_type IN ('chat', 'eventsub')),
+    access_token TEXT NOT NULL,
+    expires_at TIMESTAMP NOT NULL
+);

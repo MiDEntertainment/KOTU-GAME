@@ -72,14 +72,14 @@ const { getInventory, getItemLimit, updateInventory} = require('../server/utils/
 
 // FIGHT TESTS
 
-(async () => {
+// (async () => {
 
-    console.log('🎯 1. Test successful fighting');
-    console.log(await fightEnemy('quietgamergirl', '11') ); // Expected: minus health, updates inventory with XP
+//     console.log('🎯 1. Test successful fighting');
+//     console.log(await fightEnemy('quietgamergirl', '11') ); // Expected: minus health, updates inventory with XP
 
-     console.log('🎯 1. Test successful fighting');
-     console.log(await fightEnemy('quietgamergirl', '12') ); // Expected: minus health, updates inventory with XP
+//      console.log('🎯 1. Test successful fighting');
+//      console.log(await fightEnemy('quietgamergirl', '12') ); // Expected: minus health, updates inventory with XP
 
-     console.log('🎯 1. Test successful fighting');
-     console.log(await fightEnemy('quietgamergirl', '13') ); // Expected: minus health, updates inventory with XP
-})();
+//      console.log('🎯 1. Test successful fighting');
+//      console.log(await fightEnemy('quietgamergirl', '13') ); // Expected: minus health, updates inventory with XP
+// })();
