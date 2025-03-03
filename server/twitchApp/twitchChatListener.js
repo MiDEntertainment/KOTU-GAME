@@ -60,7 +60,9 @@ async function startTwitchChatListener() {
                 if (message.toLowerCase() === '!play') {
                     try {
                         const twitchUser = await eventSubApiClient.users.getUserByName(user);
-                        if (twitchUser) await addNewPlayer(user, twitchUser.id);
+                        // Pass twitchId to addNewPlayer
+                        let resultMessage2 = await addNewPlayer(user, twitchUser.id);
+                        chatClient.say(`#${channelName}`, `@${e.userName}, ${resultMessage2}`);
                     } catch (error) {
                         console.log(`❌ Error adding new player: ${error.message}`);
                     }
