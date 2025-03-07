@@ -56,7 +56,7 @@ async function updateInventory(playerId, itemName, amount) {
         );
 
         const nItem = await getItemDetailsByName(itemName);
-        const nStat = await getPlayerStats(playerID);
+        const nStat = await getPlayerStats(playerId);
 
         if (nItem.sub_type === "npc") {
             const locationId = await getLocationDetailsByID(nStat.current_location);
