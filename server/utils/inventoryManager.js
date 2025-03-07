@@ -60,11 +60,8 @@ async function updateInventory(playerId, itemName, amount) {
         if (nItem.sub_type === "npc") {
             const nStat = await getPlayerStats(playerId);
             const locationId = await getLocationDetailsByID(nStat.current_location);
-            console.log('NPC conversation');
             return `You meet ${itemName}: ${locationId.plot}`;
         }
-
-        console.log(`✅ Inventory updated: ${itemName} (${currentQuantity + amount})`);
         return `✅ Inventory updated: ${itemName} (${currentQuantity + amount})`;
     } catch (error) {
         console.error(`❌ Error updating inventory:`, error);
