@@ -1,4 +1,4 @@
-const { db, getItemDetailsByName, getPlayerStats } = require('./dbHelper');
+const { db, getItemDetailsByName, getPlayerStats, getLocationDetailsByID } = require('./dbHelper');
 
 // ✅ Fetch inventory details for a player
 async function getInventory(playerId, itemName) {
