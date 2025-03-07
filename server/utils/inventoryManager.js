@@ -1,4 +1,4 @@
-const { db } = require('./dbHelper');
+const { db, getItemDetailsByName, getPlayerStats } = require('./dbHelper');
 
 // ✅ Fetch inventory details for a player
 async function getInventory(playerId, itemName) {
@@ -54,6 +54,14 @@ async function updateInventory(playerId, itemName, amount) {
              DO UPDATE SET quantity = inventory.quantity + $3`,
             [playerId, itemName, amount]
         );
+
+        const nItem = await getItemDetailsByName(itemName);
+        const nStat = await getPlayerStats(playerID);
+
+        if (nItem.sub_type === "npc") {
+            const locationId = await getLocationDetailsByID(nStat.current_location);
+            return `You meet ${itemName}: ${locationId.plot} `;
+        }
 
         return `✅ Inventory updated: ${itemName} (${currentQuantity + amount})`;
     } catch (error) {

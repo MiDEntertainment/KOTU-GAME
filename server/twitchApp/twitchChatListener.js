@@ -62,7 +62,7 @@ async function startTwitchChatListener() {
                         const twitchUser = await eventSubApiClient.users.getUserByName(user);
                         // Pass twitchId to addNewPlayer
                         let resultMessage2 = await addNewPlayer(user, twitchUser.id);
-                        chatClient.say(`#${channelName}`, `@${e.userName}, ${resultMessage2}`);
+                        chatClient.say(`#${channelName}`, `@${user}, ${resultMessage2}`);
                     } catch (error) {
                         console.log(`❌ Error adding new player: ${error.message}`);
                     }
@@ -78,9 +78,9 @@ async function startTwitchChatListener() {
                 let resultMessage = 'capturing';  // ✅ Use `let` instead of `const`
         
                 if (rewardTitle === 'hunt') {
-                    resultMessage = await skillAttempt(e.userName, 'hunting_skills', 'Animal');
+                    resultMessage = await skillAttempt(e.userName, 'hunting_skills', 'Food');
                 } else if (rewardTitle === 'search') {
-                    resultMessage = await skillAttempt(e.userName, 'searching_skills', 'iQuest');
+                    resultMessage = await skillAttempt(e.userName, 'searching_skills', 'Item');
                 } else if (['eat', 'sell', 'travel'].includes(rewardTitle) && userInput) {
                     switch (rewardTitle) {
                         case 'eat':

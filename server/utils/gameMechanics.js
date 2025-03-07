@@ -1,4 +1,4 @@
-const { getPlayerId, getPlayerStats, updatePlayerStats, getItemDetailsByName, getItemDetailsByType, winChance, getItemDetailsByID } = require('./dbHelper');
+const { getPlayerId, getPlayerStats, updatePlayerStats, getItemDetailsByName, getItemDetailsByType, winChance, getItemDetailsByID, getLocationDetailsByID } = require('./dbHelper');
 const { updateInventory } = require('./inventoryManager');
 
 // ✅ Probability Calculation
@@ -30,9 +30,10 @@ async function skillAttempt(username, skillType, itemType) {
         await updatePlayerStats(playerId, { [skillType]: stats[skillType] + 1 });
 
         // ✅ Check if skillType is 'search' and item is 'enemy'
-        if (skillType === "searching_skills" && item.item_name === "enemy") {
+        if (skillType === "searching_skills" && item.sub_type === "enemy") {
             return fightEnemy(username, item.item_id);
         }
+
         const inventoryResponse = await updateInventory(playerId, item.item_name, 1);
         return inventoryResponse;
     } catch (error) {
@@ -57,7 +58,7 @@ async function eatItem(username, itemName) {
         if (stats.health >= stats.health_cap) return `❌ You are already at full health.`;
 
         await updateInventory(playerId, itemName, -1);
-        const newHealth = Math.min(stats.health + 5, stats.health_cap);
+        const newHealth = Math.min(stats.health + item.sell_price, stats.health_cap);
         await updatePlayerStats(playerId, { health: newHealth });
 
         return `✅ You ate ${itemName} and now have ${newHealth} health!`;
@@ -134,7 +135,7 @@ async function fightEnemy(username, enemyID) {
         if (roll < winProbability) {
             // Victory: Award XP equal to enemy difficulty
             await updateInventory(playerId, 'xp', enemyDifficulty);
-            return `ENEMY ATTACK .... ENEMY ATTACK .... ✅ You defeated the enemy and earned ${enemyDifficulty} XP!`;
+            return `ENEMY ATTACK .... ENEMY ATTACK .... ✅ You defeated the ${enemy.item_name} and earned ${enemyDifficulty} XP!`;
         } else {
             // Defeat: Lose 1 health
             const newHealth = stats.health - 1;
@@ -142,11 +143,11 @@ async function fightEnemy(username, enemyID) {
                 // Player dies: Lose all lumins
                 await updatePlayerStats(playerId, { health: 10 });
                 await updateInventory(playerId, 'lumins', -500); // Remove 500 lumins
-                return `ENEMY ATTACK .... ENEMY ATTACK .... 💀 You died lost 500 lumins! Check on your health.`;
+                return `ENEMY ATTACK .... ENEMY ATTACK .... 💀 You died from the ${enemy.item_name} lost 500 lumins! Check on your health.`;
             } else {
                 // Player survives but takes damage
                 await updatePlayerStats(playerId, { health: newHealth });
-                return `ENEMY ATTACK .... ENEMY ATTACK .... ⚠️ You failed to defeat the enemy and lost 1 health! Consider upgrading your weapon at the tavern.`;
+                return `ENEMY ATTACK .... ENEMY ATTACK .... ⚠️ You failed to defeat the ${enemy.item_name} and lost 1 health! Consider upgrading your weapon at the tavern.`;
             }
         }
     } catch (error) {

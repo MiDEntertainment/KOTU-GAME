@@ -148,6 +148,20 @@ async function getItemDetailsByType(playerId, itemType) {
     }
 }
 
+// ✅ Fetch item details by exact location ID
+async function getLocationDetailsByID(locID) {
+    try {
+        const result = await db.query(
+            'SELECT * FROM locations WHERE location_id = $1',
+            [locID]
+        );
+        return result.rows.length ? result.rows[0] : null;
+    } catch (error) {
+        console.error('❌ Error fetching lcoation by id:', error);
+        return null;
+    }
+}
+
 // ✅ Probability of wining a fight
 function winChance(fightLevel, enemyDifficulty) {
     try {
@@ -168,4 +182,4 @@ function winChance(fightLevel, enemyDifficulty) {
     
 }
 
-module.exports = { db, getPlayerId, getPlayerStats, updatePlayerStats, getItemDetailsByName, getItemDetailsByType, addNewPlayer, winChance, getItemDetailsByID };
+module.exports = { db, getPlayerId, getPlayerStats, updatePlayerStats, getItemDetailsByName, getItemDetailsByType, addNewPlayer, winChance, getItemDetailsByID, getLocationDetailsByID };

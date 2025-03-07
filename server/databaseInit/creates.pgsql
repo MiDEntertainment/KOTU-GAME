@@ -39,7 +39,6 @@ CREATE TABLE IF NOT EXISTS locations (
     location_id SERIAL PRIMARY KEY,                           -- Unique identifier for the location
     location_name TEXT NOT NULL,                              -- Name of the location
     location_type TEXT NOT NULL CHECK (location_type IN ('Castle', 'Fort')), -- Type of location (Castle or Fort)
-    province TEXT NOT NULL,                                   -- Province the location belongs to
     spire TEXT NOT NULL,                                      -- Spire the location belongs to
     description TEXT                                         -- Description of the location
 );
