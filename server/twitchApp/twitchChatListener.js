@@ -40,6 +40,8 @@ async function setupTwitchClients() {
         listener = new EventSubWsListener({ apiClient: eventSubApiClient });
         listener.start();
 
+        console.log('twitch client setup complete');
+
         return { userId: user.id };
     } catch (error) {
         console.error('❌ Error setting up Twitch clients:', error);
@@ -75,6 +77,8 @@ async function startTwitchChatListener() {
                 const rewardTitle = e.rewardTitle.toLowerCase();
                 const userInput = e.input?.trim();
         
+                console.log('listener for chanel redemptions started');
+
                 let resultMessage = 'capturing';  // ✅ Use `let` instead of `const`
         
                 if (rewardTitle === 'hunt') {
