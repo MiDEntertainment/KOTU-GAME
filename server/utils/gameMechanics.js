@@ -54,6 +54,7 @@ async function eatItem(username, itemName) {
         // ✅ Fetch an item by exact name
         const item = await getItemDetailsByName(itemName);
         if(!item) return `❌ You cannot eat ${itemName}`;
+        
         await updateInventory(playerId, itemName, -1);
 
         // what to do with that item
