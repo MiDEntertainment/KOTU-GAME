@@ -21,7 +21,7 @@ async function skillAttempt(username, skillType, itemType) {
         const stats = await getPlayerStats(playerId);
         if (!stats) return `❌ Player stats not found.`;
 
-        if (!skillProbability(stats[skillType])) return `❌ You failed to capture anything this time.`;
+        if (!skillProbability(stats[skillType])) return `❌ You failed to find anything this time.`;
 
         // ✅ Fetch an item by type & location
         const item = await getItemDetailsByType(playerId, itemType);

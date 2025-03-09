@@ -17,14 +17,14 @@ let chatClient, eventSubApiClient, botApiClient, listener;
  */
 async function setupTwitchClients() {
     try {
-        const chatAccessToken = await getAccessToken('chat');
-        const eventSubAccessToken = await getAccessToken('eventsub');
+        let chatAccessToken = await getAccessToken('chat');
+        let eventSubAccessToken = await getAccessToken('eventsub');
 
         if (!chatAccessToken || !eventSubAccessToken) throw new Error("❌ Missing access tokens.");
 
         // ✅ Correct way to create an AuthProvider
-        const chatAuthProvider = new StaticAuthProvider(clientId, chatAccessToken);
-        const eventSubAuthProvider = new StaticAuthProvider(clientId, eventSubAccessToken);
+        let chatAuthProvider = new StaticAuthProvider(clientId, chatAccessToken);
+        let eventSubAuthProvider = new StaticAuthProvider(clientId, eventSubAccessToken);
 
         // ✅ Pass the correct AuthProvider
         botApiClient = new ApiClient({ authProvider: chatAuthProvider });
@@ -51,10 +51,10 @@ async function setupTwitchClients() {
 
 async function startTwitchChatListener() {
     try {
-        const validTokens = await checkTokenExpiration();
+        let validTokens = await checkTokenExpiration();
         if (!validTokens) return;
 
-        const clients = await setupTwitchClients();
+        let clients = await setupTwitchClients();
         if (!clients) return;
 
         chatClient.onMessage(async (channel, user, message) => {
