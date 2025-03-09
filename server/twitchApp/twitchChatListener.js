@@ -86,16 +86,16 @@ async function startTwitchChatListener() {
                 } else if (['eat', 'sell', 'travel', 'buy'].includes(rewardTitle) && userInput) {
                     switch (rewardTitle) {
                         case 'eat':
-                            resultMessage = await eatItem(e.userName, userInput);
+                            resultMessage = await eatItem(e.userName, userInput.toLowerCase().trim());
                             break;
                         case 'sell':
-                            resultMessage = await sellItem(e.userName, userInput);
+                            resultMessage = await sellItem(e.userName, userInput.toLowerCase().trim());
                             break;
                         case 'travel':
-                            resultMessage = await travelItem(e.userName, userInput);
+                            resultMessage = await travelItem(e.userName, userInput.toLowerCase().trim());
                             break;
                         case 'buy':
-                            resultMessage = await buylItem(e.userName, userInput);
+                            resultMessage = await buyItem(e.userName, userInput.toLowerCase().trim());
                             break;
                         default:
                             resultMessage = `❌ Invalid command: ${rewardTitle}`;
@@ -119,4 +119,4 @@ async function startTwitchChatListener() {
     }
 }
 
-module.exports = { startTwitchChatListener };
+module.exports = { startTwitchChatListener, setupTwitchClients};
