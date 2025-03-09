@@ -78,13 +78,6 @@ async function addNewPlayer(username, twitchId) {
             [newPlayerId]
         );
 
-        // Initialize inventory with XP
-        await db.query(
-            `INSERT INTO inventory (player_id, item_name, quantity) 
-             VALUES ($1, 'xp', 10)`,
-            [newPlayerId]
-        );
-
         return `@${username}, Welcome traveler! Use channel rewards to play the game.`;
     } catch (error) {
         console.error('❌ Error adding new player:', error);

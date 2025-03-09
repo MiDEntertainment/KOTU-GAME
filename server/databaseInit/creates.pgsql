@@ -9,13 +9,13 @@ CREATE TABLE IF NOT EXISTS player_stats (
     stat_id SERIAL PRIMARY KEY,                -- Unique identifier for each stats record
     player_id INTEGER NOT NULL,                -- Foreign key linking to Players table
     health INTEGER DEFAULT 10,                -- Player's health (default 10)
-    fighting_skills INTEGER DEFAULT 0,         -- Fighting skill level
-    life_skills INTEGER DEFAULT 0,             -- Crafting skill level
+    hidden_skills INTEGER DEFAULT 0,           -- Talking and mini game skill level
     hunting_skills INTEGER DEFAULT 0,          -- Hunting skill level
-    searching_skills INTEGER DEFAULT 0,        -- Scouting skill level
+    searching_skills INTEGER DEFAULT 0,        -- Searching skill level
     current_location INTEGER DEFAULT 1,       -- Current objective the player is on
     current_rank INTEGER DEFAULT 1,            -- Default to the lowest rank
     health_cap INTEGER DEFAULT 10,             -- Default to the lowest rank health cap
+    xp_level INTEGER DEFAULT 10,             -- Default to the lowest rank health cap
     FOREIGN KEY (player_id) REFERENCES player(player_id) ON DELETE CASCADE
 );
 
@@ -43,39 +43,6 @@ CREATE TABLE IF NOT EXISTS locations (
     description TEXT                                         -- Description of the location
 );
 
-CREATE TABLE IF NOT EXISTS objectives (
-    objective_id SERIAL PRIMARY KEY,              -- Unique identifier for the objective
-    objective_name TEXT NOT NULL,                 -- Name of the objective
-    objective_location INTEGER NOT NULL,          -- Foreign key referencing locations table
-    FOREIGN KEY (objective_location) REFERENCES locations(location_id) ON DELETE CASCADE -- Cascade delete
-);
-
-CREATE TABLE IF NOT EXISTS tasks (
-    task_id SERIAL PRIMARY KEY,                  -- Unique identifier for each task
-    objective_id INTEGER NOT NULL,               -- Foreign key referencing the objectives table
-    task_name TEXT NOT NULL,                     -- Name of the task
-    task_description TEXT NOT NULL,              -- Detailed description of the task
-    required_command TEXT DEFAULT NULL,          -- Tracks what command this task applies to   
-    FOREIGN KEY (objective_id) REFERENCES objectives(objective_id) ON DELETE CASCADE -- Cascade delete
-);
-
-CREATE TABLE IF NOT EXISTS task_rewards (
-    reward_id SERIAL PRIMARY KEY,               -- Unique identifier for each reward
-    task_id INTEGER NOT NULL,                   -- Foreign key referencing the tasks table
-    item_name TEXT DEFAULT NULL,                -- Name of the item rewarded (nullable if no item)
-    quantity INTEGER DEFAULT 1,                 -- Quantity of the item rewarded (default is 1)
-    FOREIGN KEY (task_id) REFERENCES tasks(task_id) ON DELETE CASCADE -- Cascade delete
-);
-
-CREATE TABLE IF NOT EXISTS player_progress (
-    progress_id SERIAL PRIMARY KEY,                  -- Unique identifier for progress entries
-    player_id INTEGER NOT NULL,                      -- Foreign key linking to players table
-    task_id INTEGER NOT NULL,                        -- Foreign key linking to tasks table
-    completion_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Timestamp for task completion
-    FOREIGN KEY (player_id) REFERENCES player(player_id) ON DELETE CASCADE, -- Cascade delete
-    FOREIGN KEY (task_id) REFERENCES tasks(task_id) ON DELETE CASCADE         -- Cascade delete
-);
-
 CREATE TABLE IF NOT EXISTS items (
     item_id SERIAL PRIMARY KEY,               -- Unique identifier for each item
     item_name TEXT NOT NULL,                  -- Name of the item
@@ -84,14 +51,6 @@ CREATE TABLE IF NOT EXISTS items (
     item_type TEXT,                            -- Type of item
     sell_price INTEGER,                         -- amount of lumins this items sells for (0 = cannot be sold)
     item_limit INTEGER DEFAULT 100              -- Maximum quantity
-);
-
-CREATE TABLE IF NOT EXISTS task_requirements (
-    requirement_id SERIAL PRIMARY KEY,  -- Unique requirement ID
-    task_id INTEGER NOT NULL,           -- Task this requirement belongs to
-    item_name TEXT NOT NULL,            -- Required item name
-    quantity_required INTEGER DEFAULT 1,-- How many of this item are needed
-    FOREIGN KEY (task_id) REFERENCES tasks(task_id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS tokens (

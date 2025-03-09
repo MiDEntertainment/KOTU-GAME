@@ -76,8 +76,6 @@ async function startTwitchChatListener() {
             try {
                 const rewardTitle = e.rewardTitle.toLowerCase();
                 const userInput = e.input?.trim();
-        
-                console.log('listener for chanel redemptions started');
 
                 let resultMessage = 'capturing';  // ✅ Use `let` instead of `const`
         
@@ -85,7 +83,7 @@ async function startTwitchChatListener() {
                     resultMessage = await skillAttempt(e.userName, 'hunting_skills', 'Food');
                 } else if (rewardTitle === 'search') {
                     resultMessage = await skillAttempt(e.userName, 'searching_skills', 'Item');
-                } else if (['eat', 'sell', 'travel'].includes(rewardTitle) && userInput) {
+                } else if (['eat', 'sell', 'travel', 'buy'].includes(rewardTitle) && userInput) {
                     switch (rewardTitle) {
                         case 'eat':
                             resultMessage = await eatItem(e.userName, userInput);
@@ -95,6 +93,9 @@ async function startTwitchChatListener() {
                             break;
                         case 'travel':
                             resultMessage = await travelItem(e.userName, userInput);
+                            break;
+                        case 'buy':
+                            resultMessage = await buylItem(e.userName, userInput);
                             break;
                         default:
                             resultMessage = `❌ Invalid command: ${rewardTitle}`;

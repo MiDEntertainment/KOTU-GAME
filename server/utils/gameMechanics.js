@@ -1,5 +1,5 @@
 const { getPlayerId, getPlayerStats, updatePlayerStats, getItemDetailsByName, getItemDetailsByType, winChance, getItemDetailsByID, getLocationDetailsByID } = require('./dbHelper');
-const { updateInventory } = require('./inventoryManager');
+const { updateInventory, getInventory } = require('./inventoryManager');
 
 // ✅ Probability Calculation
 function skillProbability(skillLevel) {
@@ -53,15 +53,28 @@ async function eatItem(username, itemName) {
 
         // ✅ Fetch an item by exact name
         const item = await getItemDetailsByName(itemName);
-        if (!item || item.sell_price === 0) return `❌ You cannot eat ${itemName}.`;
-
-        if (stats.health >= stats.health_cap) return `❌ You are already at full health.`;
-
+        if(!item) return `❌ You cannot eat ${itemName}`;
         await updateInventory(playerId, itemName, -1);
-        const newHealth = Math.min(stats.health + item.sell_price, stats.health_cap);
-        await updatePlayerStats(playerId, { health: newHealth });
 
-        return `✅ You ate ${itemName} and now have ${newHealth} health!`;
+        // what to do with that item
+        if (item.sub_type==='food' && stats.health >= stats.health_cap) {
+            return `❌ You are already at full health.`;
+        } else if (item.sub_type=='food') {
+            const newHealth = Math.min(stats.health + item.sell_price, stats.health_cap);
+            await updatePlayerStats(playerId, { health: newHealth });
+            return `✅ You ate ${itemName} and now have ${newHealth} health!`;
+        } else if (item.item_name ==='health oil') {
+            const newHealthMax= stats.health_cap + 1;
+            await updatePlayerStats(playerId, { health_cap: newHealthMax});
+            return `✅ You used ${itemName} and now have ${newHealthMax} heath max!`;
+        } else if (item.item_name ==='weapon oil'){
+            const newWeapon= stats.weapon_level + 1;
+            await updatePlayerStats(playerId, { weapon_level: newWeapon});
+            return `✅ You used ${itemName} and now have ${newWeapon} weapon level!`;
+        } else {
+            return `❌ You cannot eat ${itemName}.`;
+        }
+
     } catch (error) {
         console.error(`❌ Error processing eat command:`, error);
         return `❌ Error processing eat command: ${error.message}`;
@@ -84,6 +97,34 @@ async function sellItem(username, itemName) {
     } catch (error) {
         console.error(`❌ Error processing sell command:`, error);
         return `❌ Error processing sell command: ${error.message}`;
+    }
+}
+
+// ✅ Buy an item
+async function buyItem(username, itemName) {
+    try {
+        const playerId = await getPlayerId(username);
+        if (!playerId) return `❌ You need to register first. Use !play to join the game.`;
+
+        const item = await getItemDetailsByName(itemName);
+        if (!item || item.item_Type === 'Buy') return `❌ You cannot buy ${itemName}.`;
+
+        //check if there is enough money
+        const buyPrice = await getInventory(playerId, 'lumins');
+        if ( buyPrice < item.sell_price) return `❌ You do not have enough lumins to buy this item.`;
+
+        //remove lumins from inventory
+        await updateInventory(playerId, 'lumins', -item.sell_price);
+        //add product to inventory
+        await updateInventory(playerId, itemName, 1);
+
+        //add item to inventory
+        const sellResponse = `✅ when your ready use the EAT reward to consume your new item: ${itemName}`;
+
+        return sellResponse;
+    } catch (error) {
+        console.error(`❌ Error processing buy command:`, error);
+        return `❌ Error processing buy command: ${error.message}`;
     }
 }
 
@@ -134,7 +175,8 @@ async function fightEnemy(username, enemyID) {
 
         if (roll < winProbability) {
             // Victory: Award XP equal to enemy difficulty
-            await updateInventory(playerId, 'xp', enemyDifficulty);
+            const newXP = (stats.xp_level + enemyDifficulty);
+            await updatePlayerStats(playerId, { xp_level: newXP });
             return `ENEMY ATTACK .... ENEMY ATTACK .... ✅ You defeated the ${enemy.item_name} and earned ${enemyDifficulty} XP!`;
         } else {
             // Defeat: Lose 1 health
@@ -147,7 +189,7 @@ async function fightEnemy(username, enemyID) {
             } else {
                 // Player survives but takes damage
                 await updatePlayerStats(playerId, { health: newHealth });
-                return `ENEMY ATTACK .... ENEMY ATTACK .... ⚠️ You failed to defeat the ${enemy.item_name} and lost 1 health! Consider upgrading your weapon at the tavern.`;
+                return `ENEMY ATTACK .... ENEMY ATTACK .... ⚠️ You failed to defeat the ${enemy.item_name} and lost 1 health! Consider buying oils to upgrading your weapon`;
             }
         }
     } catch (error) {
@@ -156,4 +198,4 @@ async function fightEnemy(username, enemyID) {
     }
 }
 
-module.exports = { skillAttempt, eatItem, sellItem, travelItem, fightEnemy, skillProbability};
+module.exports = { skillAttempt, eatItem, sellItem, buyItem, travelItem, fightEnemy, skillProbability};
