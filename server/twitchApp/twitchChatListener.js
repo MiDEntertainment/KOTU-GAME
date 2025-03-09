@@ -119,4 +119,4 @@ async function startTwitchChatListener() {
     }
 }
 
-module.exports = { startTwitchChatListener, setupTwitchClients};
+module.exports = { startTwitchChatListener};

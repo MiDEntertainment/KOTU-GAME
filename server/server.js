@@ -8,7 +8,7 @@ require('dotenv').config();
 const { Pool } = require('pg');
 
 const playerRoutes = require('./routes/playerRoutes'); // Import player routes
-const { startTwitchChatListener, setupTwitchClients } = require('./twitchApp/twitchChatListener');
+const { startTwitchChatListener} = require('./twitchApp/twitchChatListener');
 
 // Initialize Express app
 const app = express();
@@ -59,4 +59,3 @@ if (process.env.RENDER) {
 module.exports = app;
 
 startTwitchChatListener();
-setupTwitchClients();
