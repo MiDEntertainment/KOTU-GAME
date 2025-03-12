@@ -133,6 +133,7 @@ async function checkTokenExpiration() {
             }
         }
 
+        console.log("✅ Tokens valid. Setting up Twitch clients...");
         return !tokenRefreshed; // If any token was refreshed, return false (restart needed)
     } catch (error) {
         console.error("❌ Error checking token expiration:", error);

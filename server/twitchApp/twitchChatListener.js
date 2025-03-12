@@ -4,13 +4,35 @@ const { ApiClient } = require('@twurple/api');
 const { EventSubWsListener } = require('@twurple/eventsub-ws');
 const { skillAttempt, eatItem, sellItem, travelItem, buyItem } = require('../utils/gameMechanics');
 const { addNewPlayer } = require('../utils/dbHelper');
-const { getAccessToken} = require('../twitchApp/refreshTokens');
+const { getAccessToken, checkTokenExpiration} = require('../twitchApp/refreshTokens');
 
 require('dotenv').config();
 const channelName = process.env.TWITCH_CHANNEL_NAME;
 const clientId = process.env.TWITCH_CLIENT_ID;
 
-let chatClient, eventSubApiClient, botApiClient, listener;
+let chatClient, eventSubApiClient, botApiClient, listener, validTokens, clients;
+
+// ✅ Function to start all Twitch services in the correct order
+async function initializeTwitchServices() {
+    try {
+        console.log("🔄 Checking token expiration...");
+        validTokens = await checkTokenExpiration();
+        
+        if (!validTokens) {
+            console.log("❌ Token expiration check failed. Exiting...");
+            return;
+        }
+
+        clients = await setupTwitchClients();
+        if (!clients) {
+            console.log("❌ Failed to set up Twitch clients. Exiting...");
+            return;
+        }
+        await startTwitchChatListener();
+    } catch (error) {
+        console.error("❌ Error initializing Twitch services:", error);
+    }
+}
 
 /**
  * ✅ Set up the Twitch API clients
@@ -40,7 +62,7 @@ async function setupTwitchClients() {
         listener = new EventSubWsListener({ apiClient: eventSubApiClient });
         listener.start();
 
-        console.log('twitch client setup complete');
+        console.log('✅ Twitch clients set up. Starting chat listener...');
 
         return { userId: user.id };
     } catch (error) {
@@ -51,10 +73,6 @@ async function setupTwitchClients() {
 
 async function startTwitchChatListener() {
     try {
-
-        let clients = await setupTwitchClients();
-        if (!clients) return;
-
         chatClient.onMessage(async (channel, user, message) => {
             if (message.startsWith('!')) {
                 if (message.toLowerCase() === '!play') {
@@ -75,7 +93,7 @@ async function startTwitchChatListener() {
                 const rewardTitle = e.rewardTitle.toLowerCase();
                 const userInput = e.input?.trim();
 
-                let resultMessage = 'capturing';  // ✅ Use `let` instead of `const`
+                let resultMessage = 'capturing';  // Use `let` instead of `const`
         
                 if (rewardTitle === 'hunt') {
                     resultMessage = await skillAttempt(e.userName, 'hunting_skills', 'Food');
@@ -117,4 +135,4 @@ async function startTwitchChatListener() {
     }
 }
 
-module.exports = { startTwitchChatListener, setupTwitchClients};
+module.exports = { startTwitchChatListener, setupTwitchClients, initializeTwitchServices};

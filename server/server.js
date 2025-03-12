@@ -8,9 +8,7 @@ require('dotenv').config();
 const { Pool } = require('pg');
 
 const playerRoutes = require('./routes/playerRoutes'); // Import player routes
-const { startTwitchChatListener, setupTwitchClients} = require('./twitchApp/twitchChatListener');
-const { checkTokenExpiration} = require('./twitchApp/refreshTokens.js');
-
+const { initializeTwitchServices} = require('./twitchApp/twitchChatListener');
 
 // Initialize Express app
 const app = express();
@@ -59,30 +57,5 @@ if (process.env.RENDER) {
 }
 
 module.exports = app;
-
-// ✅ Function to start all Twitch services in the correct order
-async function initializeTwitchServices() {
-    try {
-        console.log("🔄 Checking token expiration...");
-        let validTokens = await checkTokenExpiration();
-        
-        if (!validTokens) {
-            console.log("❌ Token expiration check failed. Exiting...");
-            return;
-        }
-
-        console.log("✅ Tokens valid. Setting up Twitch clients...");
-        let clients = await setupTwitchClients();
-        if (!clients) {
-            console.log("❌ Failed to set up Twitch clients. Exiting...");
-            return;
-        }
-
-        console.log("✅ Twitch clients set up. Starting chat listener...");
-        await startTwitchChatListener();
-    } catch (error) {
-        console.error("❌ Error initializing Twitch services:", error);
-    }
-}
 
 initializeTwitchServices();
