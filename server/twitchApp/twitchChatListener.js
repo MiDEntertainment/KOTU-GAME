@@ -4,7 +4,7 @@ const { ApiClient } = require('@twurple/api');
 const { EventSubWsListener } = require('@twurple/eventsub-ws');
 const { skillAttempt, eatItem, sellItem, travelItem, buyItem } = require('../utils/gameMechanics');
 const { addNewPlayer } = require('../utils/dbHelper');
-const { getAccessToken, checkTokenExpiration } = require('../twitchApp/refreshTokens');
+const { getAccessToken} = require('../twitchApp/refreshTokens');
 
 require('dotenv').config();
 const channelName = process.env.TWITCH_CHANNEL_NAME;
@@ -31,7 +31,7 @@ async function setupTwitchClients() {
         eventSubApiClient = new ApiClient({ authProvider: eventSubAuthProvider });
 
         // ✅ Get the Twitch user ID properly
-        const user = await eventSubApiClient.users.getUserByName(channelName);
+        user = await eventSubApiClient.users.getUserByName(channelName);
         if (!user) throw new Error(`❌ Failed to fetch Twitch User ID for ${channelName}`);
 
         chatClient = new ChatClient({ authProvider: chatAuthProvider, channels: [channelName] });
@@ -51,8 +51,6 @@ async function setupTwitchClients() {
 
 async function startTwitchChatListener() {
     try {
-        let validTokens = await checkTokenExpiration();
-        if (!validTokens) return;
 
         let clients = await setupTwitchClients();
         if (!clients) return;
@@ -113,10 +111,10 @@ async function startTwitchChatListener() {
             }
         });
 
-        console.log(`🎉 Twitch Chat Listener & EventSub Ready!`);
+        console.log(`🎉 Twitch Chat Listener Ready!`);
     } catch (error) {
         console.error('❌ Error starting Twitch chat listener:', error);
     }
 }
 
-module.exports = { startTwitchChatListener};
+module.exports = { startTwitchChatListener, setupTwitchClients};
