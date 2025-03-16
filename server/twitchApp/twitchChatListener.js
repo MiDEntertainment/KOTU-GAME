@@ -83,19 +83,22 @@ async function startTwitchChatListener() {
                 let resultMessage = 'capturing';  // ✅ Use `let` instead of `const`
         
                 if (rewardTitle === 'hunt') {
-                    resultMessage = await skillAttempt(e.userName, 'hunting_skills', 'Animal');
+                    resultMessage = await skillAttempt(e.userName, 'hunting_skills', 'Food');
                 } else if (rewardTitle === 'search') {
-                    resultMessage = await skillAttempt(e.userName, 'searching_skills', 'iQuest');
-                } else if (['eat', 'sell', 'travel'].includes(rewardTitle) && userInput) {
+                    resultMessage = await skillAttempt(e.userName, 'searching_skills', 'Item');
+                } else if (['eat', 'sell', 'travel', 'buy'].includes(rewardTitle) && userInput) {
                     switch (rewardTitle) {
                         case 'eat':
-                            resultMessage = await eatItem(e.userName, userInput);
+                            resultMessage = await eatItem(e.userName, userInput.toLowerCase().trim());
                             break;
                         case 'sell':
-                            resultMessage = await sellItem(e.userName, userInput);
+                            resultMessage = await sellItem(e.userName, userInput.toLowerCase().trim());
                             break;
                         case 'travel':
-                            resultMessage = await travelItem(e.userName, userInput);
+                            resultMessage = await travelItem(e.userName, userInput.toLowerCase().trim());
+                            break;
+                        case 'buy':
+                            resultMessage = await buyItem(e.userName, userInput.toLowerCase().trim());
                             break;
                         default:
                             resultMessage = `❌ Invalid command: ${rewardTitle}`;
