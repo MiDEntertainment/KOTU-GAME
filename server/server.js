@@ -5,7 +5,7 @@ const http = require('http'); // ✅ Use HTTP for Render
 const https = require('https');
 require('dotenv').config();
 
-const { initializeTwitchServices} = require('./twitchApp/twitchChatListener');
+const { startTwitchChatListener} = require('./twitchApp/twitchChatListener');
 
 // Initialize Express app
 const app = express();
@@ -32,4 +32,4 @@ if (process.env.RENDER) {
 
 module.exports = app;
 
-initializeTwitchServices();
+startTwitchChatListener();

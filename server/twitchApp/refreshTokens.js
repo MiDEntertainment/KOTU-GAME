@@ -126,10 +126,12 @@ async function checkTokenExpiration() {
             if (!expires_at || now >= new Date(expires_at)) {
                 console.log(`🔄 ${token_type.toUpperCase()} token expired! Refreshing...`);
                 await refreshFunctions[token_type]();
+                refreshed = true;
             }
         }
+        
+        console.log("✅ Tokens valid.");
 
-        console.log("✅ Tokens valid. Setting up Twitch clients...");
         return "Valid";
     } catch (error) {
         console.error("❌ Error checking token expiration:", error);

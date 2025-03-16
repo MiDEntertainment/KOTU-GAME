@@ -1,8 +1,8 @@
-const { StaticAuthProvider } = require('@twurple/auth');
 const { ChatClient } = require('@twurple/chat');
 const { ApiClient } = require('@twurple/api');
+const { StaticAuthProvider } = require('@twurple/auth');
 const { EventSubWsListener } = require('@twurple/eventsub-ws');
-const { skillAttempt, eatItem, sellItem, travelItem, buyItem } = require('../utils/gameMechanics');
+const { skillAttempt, eatItem, sellItem, travelItem } = require('../utils/gameMechanics');
 const { addNewPlayer } = require('../utils/dbHelper');
 const { getAccessToken, checkTokenExpiration } = require('../twitchApp/refreshTokens');
 
@@ -10,89 +10,67 @@ require('dotenv').config();
 const channelName = process.env.TWITCH_CHANNEL_NAME;
 const clientId = process.env.TWITCH_CLIENT_ID;
 
-let chatClient, eventSubApiClient, botApiClient, listener, clients;
-let chatCooldowns = new Set();  // ✅ Prevents spam of `!commands`
+let chatClient, eventSubApiClient, listener, chatAccessToken, clients;
 
-// ✅ Set up Twitch API Clients
+/**
+ * ✅ Set up the Twitch API clients
+ */
 async function setupTwitchClients() {
-    try {
-        let chatAccessToken = await getAccessToken('chat');
-        let eventSubAccessToken = await getAccessToken('eventsub');
-
-        if (!chatAccessToken || !eventSubAccessToken) throw new Error("❌ Missing access tokens.");
-
-        let chatAuthProvider = new StaticAuthProvider(clientId, chatAccessToken);
-        let eventSubAuthProvider = new StaticAuthProvider(clientId, eventSubAccessToken);
-
-        botApiClient = new ApiClient({ authProvider: chatAuthProvider });
-        eventSubApiClient = new ApiClient({ authProvider: eventSubAuthProvider });
-
-        let user = await eventSubApiClient.users.getUserByName(channelName);
-        if (!user) throw new Error(`❌ Failed to fetch Twitch User ID for ${channelName}`);
-
-        chatClient = new ChatClient({ authProvider: chatAuthProvider, channels: [channelName] });
-        chatClient.connect();
-
-        listener = new EventSubWsListener({ apiClient: eventSubApiClient });
-        listener.start();
-
-        console.log(`✅ Twitch clients set up. UserID: ${clients.userId}`);
-
-        return { userId: user.id };
-    } catch (error) {
-        console.error('❌ Error setting up Twitch clients:', error);
-        return null;
+    if (chatAccessToken != await getAccessToken('chat')) {
+        try {
+            chatAccessToken = await getAccessToken('chat');
+            const eventSubAccessToken = await getAccessToken('eventsub');
+    
+            if (!chatAccessToken || !eventSubAccessToken) throw new Error("❌ Missing access tokens.");
+    
+            // ✅ Correct way to create an AuthProvider
+            const chatAuthProvider = new StaticAuthProvider(clientId, chatAccessToken);
+            const eventSubAuthProvider = new StaticAuthProvider(clientId, eventSubAccessToken);
+    
+            // ✅ Pass the correct AuthProvider
+            eventSubApiClient = new ApiClient({ authProvider: eventSubAuthProvider });
+    
+            // ✅ Get the Twitch user ID properly
+            const user = await eventSubApiClient.users.getUserByName(channelName);
+            if (!user) throw new Error(`❌ Failed to fetch Twitch User ID for ${channelName}`);
+    
+            chatClient = new ChatClient({ authProvider: chatAuthProvider, channels: [channelName] });
+            chatClient.connect();
+    
+            listener = new EventSubWsListener({ apiClient: eventSubApiClient });
+            listener.start();
+    
+            console.log(`✅ Twitch clients set up.`);
+    
+            return { userId: user.id };
+        } catch (error) {
+            console.error('❌ Error setting up Twitch clients:', error);
+            return null;
+        }
     }
+
+    return { userId: user.id };
+    
 }
 
-// ✅ Initialize Twitch Services
-async function initializeTwitchServices() {
-    try {
-        await checkTokenExpiration();
-
-        await setupTwitchClients();
-
-        await startTwitchChatListener();  // Ensure it starts after setup
-
-    } catch (error) {
-        console.error("❌ Error initializing Twitch services:", error);
-    }
-}
-
-// ✅ Start Twitch Chat Listener (Prevents Duplicate Start)
 async function startTwitchChatListener() {
     try {
-        console.log(`🎉 Twitch Chat Listener Starting...`);
-        
+        const validTokens = await checkTokenExpiration();
+        if (validTokens != "Valid") return;
+
+        clients = await setupTwitchClients();
+        if (!clients) return;
+
         chatClient.onMessage(async (channel, user, message) => {
-            if (!message.startsWith('!')) return; // Ignore non-command messages
-
-            const command = message.toLowerCase().trim();
-            
-            // ✅ Prevent spamming (Cooldown: 3s per user)
-            if (chatCooldowns.has(user)) return;
-            chatCooldowns.add(user);
-            setTimeout(() => chatCooldowns.delete(user), 3000);
-
-            switch (command) {
-                case '!play':
+            if (message.startsWith('!')) {
+                if (message.toLowerCase() === '!play') {
                     try {
                         const twitchUser = await eventSubApiClient.users.getUserByName(user);
-                        if (!twitchUser) {
-                            chatClient.say(`#${channelName}`, `@${user}, I couldn't retrieve your Twitch ID. Try again later.`);
-                            return;
-                        }
-                        let resultMessage2 = await addNewPlayer(user, twitchUser.id);
-                        chatClient.say(`#${channelName}`, `@${user}, ${resultMessage2}`);
+                        if (twitchUser) await addNewPlayer(user, twitchUser.id);
                     } catch (error) {
-                        console.error(`❌ Error in !play command:`, error);
-                        chatClient.say(`#${channelName}`, `@${user}, an error occurred while adding you.`);
+                        console.log(`❌ Error adding new player: ${error.message}`);
                     }
-                    break;
-
-                default:
-                    chatClient.say(`#${channelName}`, `@${user}, unknown command. Try !play`);
-                    break;
+                }
             }
         });
 
@@ -100,33 +78,30 @@ async function startTwitchChatListener() {
             try {
                 const rewardTitle = e.rewardTitle.toLowerCase();
                 const userInput = e.input?.trim();
-
-                let resultMessage = 'capturing';  // Use `let` instead of `const`
+        
+                let resultMessage = 'capturing';  // ✅ Use `let` instead of `const`
         
                 if (rewardTitle === 'hunt') {
-                    resultMessage = await skillAttempt(e.userName, 'hunting_skills', 'Food');
+                    resultMessage = await skillAttempt(e.userName, 'hunting_skills', 'Animal');
                 } else if (rewardTitle === 'search') {
-                    resultMessage = await skillAttempt(e.userName, 'searching_skills', 'Item');
-                } else if (['eat', 'sell', 'travel', 'buy'].includes(rewardTitle) && userInput) {
+                    resultMessage = await skillAttempt(e.userName, 'searching_skills', 'iQuest');
+                } else if (['eat', 'sell', 'travel'].includes(rewardTitle) && userInput) {
                     switch (rewardTitle) {
                         case 'eat':
-                            resultMessage = await eatItem(e.userName, userInput.toLowerCase().trim());
+                            resultMessage = await eatItem(e.userName, userInput);
                             break;
                         case 'sell':
-                            resultMessage = await sellItem(e.userName, userInput.toLowerCase().trim());
+                            resultMessage = await sellItem(e.userName, userInput);
                             break;
                         case 'travel':
-                            resultMessage = await travelItem(e.userName, userInput.toLowerCase().trim());
-                            break;
-                        case 'buy':
-                            resultMessage = await buyItem(e.userName, userInput.toLowerCase().trim());
+                            resultMessage = await travelItem(e.userName, userInput);
                             break;
                         default:
                             resultMessage = `❌ Invalid command: ${rewardTitle}`;
                             break;
                     }
                 } else {
-                    chatClient.say(`#${channelName}`, `@${e.userName}, invalid or missing input for redemption.`);
+                    chatClient.say(`#${channelName}`, `@${e.userName} Invalid or missing input for redemption.`);
                     return;
                 }
         
@@ -137,10 +112,10 @@ async function startTwitchChatListener() {
             }
         });
 
-        console.log(`🎉 Twitch Chat Listener Ready!`);
+        console.log(`🎉 Twitch Chat Listener & EventSub Ready!`);
     } catch (error) {
         console.error('❌ Error starting Twitch chat listener:', error);
     }
 }
 
-module.exports = { initializeTwitchServices };
+module.exports = { startTwitchChatListener, setupTwitchClients};
