@@ -61,12 +61,13 @@ async function startTwitchChatListener() {
         clients = await setupTwitchClients();
         if (!clients) return;
 
+        //make sure this is working. Security = Add a cooldown for the Play Command
         chatClient.onMessage(async (channel, user, message) => {
             if (message.startsWith('!')) {
                 if (message.toLowerCase() === '!play') {
                     try {
                         const twitchUser = await eventSubApiClient.users.getUserByName(user);
-                        if (twitchUser) await addNewPlayer(user, twitchUser.id);
+                        await addNewPlayer(user, twitchUser.id);
                     } catch (error) {
                         console.log(`❌ Error adding new player: ${error.message}`);
                     }
