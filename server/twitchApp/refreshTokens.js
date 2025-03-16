@@ -115,29 +115,25 @@ async function refreshEventSubToken() {
 // ✅ Check token expiration and refresh if necessary
 async function checkTokenExpiration() {
     try {
-        const result = await pool2.query("SELECT * FROM tokens");
+        const result = await pool2.query("SELECT token_type, expires_at FROM tokens");
         const now = new Date();
-        let tokenRefreshed = false; // Track if any token was refreshed
+        const refreshFunctions = {
+            'chat': refreshAccessToken,
+            'eventsub': refreshEventSubToken
+        };
 
-        for (const row of result.rows) {
-            if (now >= new Date(row.expires_at) || row.expires_at === null) {
-                console.log(`🔄 ${row.token_type.toUpperCase()} token expired! Refreshing...`);
-                
-                if (row.token_type === 'chat') {
-                    await refreshAccessToken();
-                    tokenRefreshed = true;
-                } else if (row.token_type === 'eventsub') {
-                    await refreshEventSubToken();
-                    tokenRefreshed = true;
-                }
+        for (const { token_type, expires_at } of result.rows) {
+            if (!expires_at || now >= new Date(expires_at)) {
+                console.log(`🔄 ${token_type.toUpperCase()} token expired! Refreshing...`);
+                await refreshFunctions[token_type]();
             }
         }
 
         console.log("✅ Tokens valid. Setting up Twitch clients...");
-        return !tokenRefreshed; // If any token was refreshed, return false (restart needed)
+        return "Valid";
     } catch (error) {
         console.error("❌ Error checking token expiration:", error);
-        return false;
+        return "Error";
     }
 }
 
