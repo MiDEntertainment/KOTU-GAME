@@ -2,7 +2,7 @@ const { ChatClient } = require('@twurple/chat');
 const { ApiClient } = require('@twurple/api');
 const { StaticAuthProvider } = require('@twurple/auth');
 const { EventSubWsListener } = require('@twurple/eventsub-ws');
-const { skillAttempt, eatItem, sellItem, travelItem } = require('../utils/gameMechanics');
+const { skillAttempt, eatItem, sellItem, travelItem, buyItem } = require('../utils/gameMechanics');
 const { addNewPlayer } = require('../utils/dbHelper');
 const { getAccessToken, checkTokenExpiration } = require('../twitchApp/refreshTokens');
 

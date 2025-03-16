@@ -25,58 +25,58 @@ const { getInventory, getItemLimit, updateInventory} = require('../server/utils/
 // })();
 
 // GAME MECHANIC TESTS
-// (async () => {
-//     try {
-//         console.log("🎯 7. Testing skillProbability");
-//         console.log("Skill Level 10: ", skillProbability(0)); // Should return true ~35% of the time
-//         console.log("Skill Level 80: ", skillProbability(100)); // Should return true ~99% of the time
+(async () => {
+    try {
+        // console.log("🎯 7. Testing skillProbability");
+        // console.log("Skill Level 10: ", skillProbability(0)); // Should return true ~35% of the time
+        // console.log("Skill Level 80: ", skillProbability(100)); // Should return true ~99% of the time
 
-//         console.log("🎯 8. Testing skillAttempt");
-//         console.log(await skillAttempt('quietgamergirl', 'searching_skills', 'Item')); //Either recieve an item or an enemy
+        // console.log("🎯 8. Testing skillAttempt");
+        // console.log(await skillAttempt('quietgamergirl', 'searching_skills', 'Item')); //Either recieve an item or an enemy
 
-//         console.log("🎯 9. Testing skillAttempt");
-//         console.log(await skillAttempt('quietgamergirl', 'hunting_skills', 'Food')); //Either recieve a fish, rabbit, or nothing
+        // console.log("🎯 9. Testing skillAttempt");
+        // console.log(await skillAttempt('quietgamergirl', 'hunting_skills', 'Food')); //Either recieve a fish, rabbit, or nothing
  
-//         console.log('🎯 10. Test successful eatItem(username, itemName)');
-//         console.log(await eatItem('quietgamergirl', 'fish')); // Expected: Gains health, updates inventory
+        // console.log('🎯 10. Test successful eatItem(username, itemName)');
+        // console.log(await eatItem('quietgamergirl', 'fish')); // Expected: Gains health, updates inventory
 
-//         console.log('-- 11. Test eating item not in inventory');
-//         console.log(await eatItem('quietgamergirl', 'NonExistentItem')); // Expected: Error message
+        // console.log('-- 11. Test eating item not in inventory');
+        // console.log(await eatItem('quietgamergirl', 'NonExistentItem')); // Expected: Error message
 
-//         console.log('-- 12. Test eating item with sell price = 0');
-//         console.log(await eatItem('quietgamergirl', 'Lumins')); // Expected: Cannot eat this item
+        // console.log('-- 12. Test eating item with sell price = 0');
+        // console.log(await eatItem('quietgamergirl', 'Lumins')); // Expected: Cannot eat this item
 
-//         console.log('🎯 13. Test successful sellItem(username, itemName)');
-//         console.log(await sellItem('quietgamergirl', 'rabbit')); // Expected: Gains Lumins, updates inventory
+        // console.log('🎯 13. Test successful sellItem(username, itemName)');
+        // console.log(await sellItem('quietgamergirl', 'rabbit')); // Expected: Gains Lumins, updates inventory
 
-//         console.log('-- 14. Test selling item not in inventory');
-//         console.log(await sellItem('quietgamergirl', 'Apple')); // Expected: Error message
+        // console.log('-- 14. Test selling item not in inventory');
+        // console.log(await sellItem('quietgamergirl', 'Apple')); // Expected: Error message
 
-//         console.log('🎯 16. Test successful travelItem(username, locationNumber)');
-//         console.log(await travelItem('quietgamergirl', '1')); //Stats updated
+        // console.log('🎯 16. Test successful travelItem(username, locationNumber)');
+        // console.log(await travelItem('quietgamergirl', '1')); //Stats updated
 
-//         console.log('-- 17. Test travel to place that doesnt exist');
-//         console.log(await travelItem('quietgamergirl', '500')); // Expected: Error message
+        // console.log('-- 17. Test travel to place that doesnt exist');
+        // console.log(await travelItem('quietgamergirl', '500')); // Expected: Error message
 
-//         console.log('🎯 18. Test successful buyItem(username, itemName)');
-//         console.log(await buyItem('quietgamergirl', 'weapon oil')); // Expected: updates inventory
+        console.log('🎯 18. Test successful buyItem(username, itemName)');
+        console.log(await buyItem('quietgamergirl', 'weapon oil')); // Expected: updates inventory
 
-//         console.log(' 19. Test successful eatItem(username, itemName)');
-//         console.log(await eatItem('quietgamergirl', 'weapon oil')); // Expected: Gains weapon level, updates stats
+        console.log(' 19. Test successful eatItem(username, itemName)');
+        console.log(await eatItem('quietgamergirl', 'weapon oil')); // Expected: Gains weapon level, updates stats
 
-//         console.log('-- 20. Test buying item you do not have enough money for');
-//         console.log(await buyItem('quietgamergirl', 'health oil')); // Expected: Error message
+        console.log('-- 20. Test buying item you do not have enough money for');
+        console.log(await buyItem('quietgamergirl', 'health oil')); // Expected: Error message
 
-//         console.log('-- 21. Test buying item not in items');
-//         console.log(await buyItem('quietgamergirl', 'Apple')); // Expected: Error message
+        console.log('-- 21. Test buying item not in items');
+        console.log(await buyItem('quietgamergirl', 'Apple')); // Expected: Error message
 
-//         console.log('-- 22. Test buying item with sell price = 0');
-//         console.log(await buyItem('quietgamergirl', 'XP')); // Expected: Cannot sell this item
+        console.log('-- 22. Test buying item with sell price = 0');
+        console.log(await buyItem('quietgamergirl', 'XP')); // Expected: Cannot sell this item
 
-//     } catch (error) {
-//         console.error("❌ Error during testing:", error);
-//     }
-// })();
+    } catch (error) {
+        console.error("❌ Error during testing:", error);
+    }
+})();
 
 
 // FIGHT TESTS
