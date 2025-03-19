@@ -61,28 +61,18 @@ async function startTwitchChatListener() {
         clients = await setupTwitchClients();
         if (!clients) return;
 
-        //make sure this is working. Security = Add a cooldown for the Play Command
+        // Listen for chat messages
         chatClient.onMessage(async (channel, user, message) => {
-            
-            let chatMessage = 'capturing'; 
-            let userChat = await chatClient.users.getUserByName(username);
-
-            try {
-                if (message.startsWith('!')) {
-                    if (message.toLowerCase() === '!play') {
-                        try {
-                            chatMessage = await addNewPlayer(user, userChat.id);
-                        } catch (error) {
-                            console.log(`❌ Error adding new player: ${error.message}`);
-                        }
-                    }
+            console.log(`💬 ${user}: ${message}`);
+            if (message.startsWith('!')) {
+                console.log(`🔹 Detected command: ${message}`);
+                
+                if (message.toLowerCase() === '!play') {
+                    console.log(`🎮 ${user} used !play command. Attempting to add player...`);
+                    const chatMessage = await addNewPlayer(user);
+                    chatClient.say(`#${channel}`, `@${user}, ${resultMessage}`);
                 }
-
-                chatClient.say(`#${channel}`, `@${user}, ${chatMessage}`);
-            } catch {
-                chatClient.say(`#${channel}`, `@${user} An error occurred while processing your request.`);   
             }
-            
         });
 
         listener.onChannelRedemptionAdd(clients.userId, async (e) => {
