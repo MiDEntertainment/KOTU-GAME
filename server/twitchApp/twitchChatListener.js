@@ -63,13 +63,11 @@ async function startTwitchChatListener() {
 
         // Listen for chat messages
         chatClient.onMessage(async (channel, user, message) => {
-            console.log(`💬 ${user}: ${message}`);
             if (message.startsWith('!')) {
-                console.log(`🔹 Detected command: ${message}`);
-                
                 if (message.toLowerCase() === '!play') {
-                    console.log(`🎮 ${user} used !play command. Attempting to add player...`);
-                    const chatMessage = await addNewPlayer(user);
+                    const userInfo = await eventSubApiClient.users.getUserByName(user);
+                    const twitchId = userInfo.id;
+                    const chatMessage = await addNewPlayer(user, twitchId);
                     chatClient.say(`#${channel}`, `@${user}, ${chatMessage}`);
                 }
             }
@@ -77,7 +75,7 @@ async function startTwitchChatListener() {
 
         listener.onChannelRedemptionAdd(clients.userId, async (e) => {
             try {
-                if (rewardTitle === "got 'em") return;
+                if (rewardTitle === "Got 'Em") return;
 
                 const rewardTitle = e.rewardTitle.toLowerCase();
                 const userInput = e.input?.trim();

@@ -84,7 +84,7 @@ async function updatePlayerStats(playerId, updates) {
 }
 
 // ✅ Add New Player (Sanitized)
-async function addNewPlayer(username) {
+async function addNewPlayer(username, twitchId) {
     try {
         const playerId = await getPlayerId(username);
         if (playerId) {
@@ -93,8 +93,8 @@ async function addNewPlayer(username) {
 
         const newPlayer = await db.query(
             `INSERT INTO player (twitch_username, join_date, twitch_id) 
-             VALUES ($1, NOW()) RETURNING player_id`,
-            [username]
+             VALUES ($1, NOW(), $2) RETURNING player_id`,
+            [username, twitchId]
         );
 
         const newPlayerId = newPlayer.rows[0].player_id;
