@@ -86,6 +86,9 @@ async function startTwitchChatListener() {
                     resultMessage = await skillAttempt(e.userName, 'hunting_skills', 'Food');
                 } else if (rewardTitle === 'search') {
                     resultMessage = await skillAttempt(e.userName, 'searching_skills', 'Item');
+                } else if (rewardTitle === 'play') {
+                    const twitchUser = await eventSubApiClient.users.getUserByName(user);
+                    resultMessage = await skillAttempt(e.userName, twitchUser.id);
                 } else if (['eat', 'sell', 'travel', 'buy'].includes(rewardTitle) && userInput) {
                     switch (rewardTitle) {
                         case 'eat':
@@ -105,6 +108,7 @@ async function startTwitchChatListener() {
                             break;
                     }
                 } else {
+                    //need to make sure other redemptions work
                     chatClient.say(`#${channelName}`, `@${e.userName} Invalid or missing input for redemption.`);
                     return;
                 }

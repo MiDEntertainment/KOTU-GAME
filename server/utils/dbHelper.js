@@ -85,10 +85,6 @@ async function updatePlayerStats(playerId, updates) {
 
 // ✅ Add New Player (Sanitized)
 async function addNewPlayer(username, twitchId) {
-    if (!validateUsername(username) || !validateId(twitchId)) {
-        console.error(`❌ Invalid player data: username (${username}), twitchId (${twitchId})`);
-        return `❌ Invalid username or Twitch ID.`;
-    }
     try {
         const playerId = await getPlayerId(username);
         if (playerId) {
