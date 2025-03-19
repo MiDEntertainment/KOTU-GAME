@@ -13,9 +13,10 @@ WORKING LOG
 7. Buy = ✅ WORKING
 8. Sell = ✅ WORKING
 9. Travel = 🎯 WORKING
-10. Open Chest = ❌NOT WORKING
-11. Play Cards = ❌NOT WORKING
-12. Garden = ❌NOT WORKING
+10. Garden = ❌NOT WORKING
+11. Open Chest = ❌NOT WORKING
+12. Play Cards = ❌NOT WORKING
+
 
 */
 

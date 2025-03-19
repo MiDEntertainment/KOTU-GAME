@@ -70,13 +70,15 @@ async function startTwitchChatListener() {
                 if (message.toLowerCase() === '!play') {
                     console.log(`🎮 ${user} used !play command. Attempting to add player...`);
                     const chatMessage = await addNewPlayer(user);
-                    chatClient.say(`#${channel}`, `@${user}, ${resultMessage}`);
+                    chatClient.say(`#${channel}`, `@${user}, ${chatMessage}`);
                 }
             }
         });
 
         listener.onChannelRedemptionAdd(clients.userId, async (e) => {
             try {
+                if (rewardTitle === "got 'em") return;
+
                 const rewardTitle = e.rewardTitle.toLowerCase();
                 const userInput = e.input?.trim();
         
@@ -87,8 +89,6 @@ async function startTwitchChatListener() {
                     return;
                 } else if (rewardTitle === 'search') {
                     resultMessage = await skillAttempt(e.userName, 'searching_skills', 'Item');
-                    return;
-                } else if (rewardTitle === "Got 'Em") {
                     return;
                 } else if (['eat', 'sell', 'travel', 'buy'].includes(rewardTitle) && userInput) {
                     switch (rewardTitle) {
