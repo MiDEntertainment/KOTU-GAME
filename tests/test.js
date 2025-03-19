@@ -2,6 +2,23 @@ const { getPlayerId, getPlayerStats, updatePlayerStats, getItemDetailsByName, ge
 const { skillProbability, skillAttempt, eatItem, sellItem, buyItem, travelItem, fightEnemy } = require('../server/utils/gameMechanics');
 const { getInventory, getItemLimit, updateInventory} = require('../server/utils/inventoryManager');
 
+/*
+WORKING LOG
+1. Got 'Em = ❌NOT WORKING
+2. Play = ❌NOT WORKING
+3. Eat = ✅ WOKRING
+4. Hunt = ✅ WORKING
+5. Talk = ❌NOT WORKING
+6. Search = ✅ WORKING
+7. Buy = ✅ WORKING
+8. Sell = ✅ WORKING
+9. Travel = 🎯 WORKING
+10. Open Chest = ❌NOT WORKING
+11. Play Cards = ❌NOT WORKING
+12. Garden = ❌NOT WORKING
+
+*/
+
 // INVENTORY TESTS
 // (async () => {
 

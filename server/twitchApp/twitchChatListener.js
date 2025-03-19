@@ -63,16 +63,26 @@ async function startTwitchChatListener() {
 
         //make sure this is working. Security = Add a cooldown for the Play Command
         chatClient.onMessage(async (channel, user, message) => {
-            if (message.startsWith('!')) {
-                if (message.toLowerCase() === '!play') {
-                    try {
-                        const twitchUser = await eventSubApiClient.users.getUserByName(user);
-                        await addNewPlayer(user, twitchUser.id);
-                    } catch (error) {
-                        console.log(`❌ Error adding new player: ${error.message}`);
+            
+            let chatMessage = 'capturing'; 
+            let userChat = await chatClient.users.getUserByName(username);
+
+            try {
+                if (message.startsWith('!')) {
+                    if (message.toLowerCase() === '!play') {
+                        try {
+                            chatMessage = await addNewPlayer(user, userChat.id);
+                        } catch (error) {
+                            console.log(`❌ Error adding new player: ${error.message}`);
+                        }
                     }
                 }
+
+                chatClient.say(`#${channel}`, `@${user}, ${chatMessage}`);
+            } catch {
+                chatClient.say(`#${channel}`, `@${user} An error occurred while processing your request.`);   
             }
+            
         });
 
         listener.onChannelRedemptionAdd(clients.userId, async (e) => {
@@ -80,15 +90,16 @@ async function startTwitchChatListener() {
                 const rewardTitle = e.rewardTitle.toLowerCase();
                 const userInput = e.input?.trim();
         
-                let resultMessage = 'capturing';  // ✅ Use `let` instead of `const`
+                let resultMessage = 'capturing';
         
                 if (rewardTitle === 'hunt') {
                     resultMessage = await skillAttempt(e.userName, 'hunting_skills', 'Food');
+                    return;
                 } else if (rewardTitle === 'search') {
                     resultMessage = await skillAttempt(e.userName, 'searching_skills', 'Item');
-                } else if (rewardTitle === 'play') {
-                    const twitchUser = await eventSubApiClient.users.getUserByName(user);
-                    resultMessage = await skillAttempt(e.userName, twitchUser.id);
+                    return;
+                } else if (rewardTitle === "Got 'Em") {
+                    return;
                 } else if (['eat', 'sell', 'travel', 'buy'].includes(rewardTitle) && userInput) {
                     switch (rewardTitle) {
                         case 'eat':
@@ -114,6 +125,7 @@ async function startTwitchChatListener() {
                 }
         
                 chatClient.say(`#${channelName}`, `@${e.userName}, ${resultMessage}`);
+
             } catch (error) {
                 console.error('❌ Error in redemption handler:', error);
                 chatClient.say(`#${channelName}`, `@${e.userName} An error occurred while processing your request.`);
