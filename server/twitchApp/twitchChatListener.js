@@ -84,10 +84,8 @@ async function startTwitchChatListener() {
         
                 if (rewardTitle === 'hunt') {
                     resultMessage = await skillAttempt(e.userName, 'hunting_skills', 'Food');
-                    return;
                 } else if (rewardTitle === 'search') {
                     resultMessage = await skillAttempt(e.userName, 'searching_skills', 'Item');
-                    return;
                 } else if (['eat', 'sell', 'travel', 'buy'].includes(rewardTitle) && userInput) {
                     switch (rewardTitle) {
                         case 'eat':
