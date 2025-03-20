@@ -36,7 +36,7 @@ async function setupTwitchClients() {
     
             chatClient = new ChatClient({ authProvider: chatAuthProvider, channels: [channelName] });
             chatClient.connect();
-            startPingInterval();
+            startReconnectInterval();
     
             listener = new EventSubWsListener({ apiClient: eventSubApiClient });
             listener.start();
