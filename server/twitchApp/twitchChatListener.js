@@ -36,6 +36,7 @@ async function setupTwitchClients() {
     
             chatClient = new ChatClient({ authProvider: chatAuthProvider, channels: [channelName] });
             chatClient.connect();
+            startPingInterval();
     
             listener = new EventSubWsListener({ apiClient: eventSubApiClient });
             listener.start();
@@ -51,6 +52,18 @@ async function setupTwitchClients() {
 
     return { userId: user.id };
     
+}
+
+// ✅ Keep-Alive PING Mechanism for Twitch Chat
+function startPingInterval() {
+    setInterval(() => {
+        if (chatClient && chatClient.isConnected) {
+            console.log("🔄 Sending PING to keep connection alive...");
+            chatClient.ping();
+        } else {
+            console.log("⚠️ Chat Client not connected, skipping PING.");
+        }
+    }, 240000); // 4 minutes (Twitch timeout is 5 minutes)
 }
 
 async function startTwitchChatListener() {
@@ -77,10 +90,8 @@ async function startTwitchChatListener() {
             try {
                 const rewardTitle = e.rewardTitle.toLowerCase();
                 const userInput = e.input?.trim();
-
-                if (rewardTitle === "Got 'Em") return;
         
-                let resultMessage = 'capturing';
+                let resultMessage = '...';
         
                 if (rewardTitle === 'hunt') {
                     resultMessage = await skillAttempt(e.userName, 'hunting_skills', 'Food');
@@ -105,8 +116,6 @@ async function startTwitchChatListener() {
                             break;
                     }
                 } else {
-                    //need to make sure other redemptions work
-                    chatClient.say(`#${channelName}`, `@${e.userName} Invalid or missing input for redemption.`);
                     return;
                 }
         

@@ -132,9 +132,8 @@ async function buyItem(username, itemName) {
 // ✅ Travel
 async function travelItem(username, locNumber) {
     try {
-
-        locationNumber = Number(locNumber);
         console.log('Basic Checks');
+        locationNumber = Number(locNumber);
         const playerId = await getPlayerId(username);
         if (!playerId) return `❌ You need to register first. Use !play to join the game.`;
 
@@ -177,7 +176,7 @@ async function travelItem(username, locNumber) {
         // ✅ Travel successful - Update location and possibly update highest_location
         await updatePlayerStats(playerId, { current_location: locationNumber });
 
-        if (locationNumber > stats.highest_location) {
+        if (locationNumber >= stats.highest_location) {
             await updatePlayerStats(playerId, { highest_location: locationNumber });
         }
 

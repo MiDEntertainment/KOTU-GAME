@@ -178,10 +178,6 @@ async function getItemDetailsByType(playerId, itemType) {
 
 // ✅ Fetch Location by ID (Sanitized)
 async function getLocationDetailsByID(locID) {
-    if (!validateId(locID)) {
-        console.error(`❌ Invalid location ID: ${locID}`);
-        return null;
-    }
     try {
         const result = await db.query(
             'SELECT * FROM locations WHERE location_id = $1',
