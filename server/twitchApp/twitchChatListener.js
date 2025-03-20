@@ -54,17 +54,21 @@ async function setupTwitchClients() {
     
 }
 
-// ✅ Keep-Alive PING Mechanism for Twitch Chat
-function startPingInterval() {
-    setInterval(() => {
-        if (chatClient && chatClient.isConnected) {
-            console.log("🔄 Sending PING to keep connection alive...");
-            chatClient.ping();
-        } else {
-            console.log("⚠️ Chat Client not connected, skipping PING.");
+// ✅ Auto-Reconnect Instead of PING
+function startReconnectInterval() {
+    setInterval(async () => {
+        if (!chatClient?.isConnected) {
+            console.log("⚠️ Chat Client disconnected. Attempting to reconnect...");
+            try {
+                await chatClient.connect();
+                console.log("✅ Reconnected to Twitch chat!");
+            } catch (error) {
+                console.error("❌ Reconnection failed:", error);
+            }
         }
-    }, 240000); // 4 minutes (Twitch timeout is 5 minutes)
+    }, 240000); // Check every 4 minutes
 }
+
 
 async function startTwitchChatListener() {
     try {

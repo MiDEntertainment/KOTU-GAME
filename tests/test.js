@@ -109,8 +109,11 @@ WORKING LOG
         // console.log('🎯 16. Test successful travelItem(username, locationNumber)');
         // console.log(await travelItem('quietgamergirl', 1)); //Stats updated
 
-        console.log('25. Test successful travelItem(username, locationNumber)');
-        console.log(await travelItem('quietgamergirl', 2)); //Stats updated, items checked, boss fight ensues.
+        // console.log('25. Test successful travelItem(username, locationNumber)');
+        // console.log(await travelItem('quietgamergirl', 2)); //Stats updated, items checked, boss fight ensues.
+
+        // console.log('--27. Test successful travelItem(username, locationNumber)');
+        // console.log(await travelItem('quietgamergirl', 3)); //Cannot move to 3
 
         // console.log('-- 26. Test going to a place your havent unlocked travelItem(username, locationNumber)');
         // console.log(await travelItem('quietgamergirl', 13)); //Stats updated, items checked, boss fight ensues.

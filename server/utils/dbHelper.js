@@ -215,7 +215,7 @@ async function hasCollectedAllItems(playerId, locationId) {
         // Fetch all non-enemy items for the location
         const itemResult = await db.query(
             `SELECT item_name FROM items 
-             WHERE item_location = $1 AND sub_type NOT IN ('enemy', 'food')`,
+             WHERE item_location = $1 AND sub_type NOT IN ('enemy', 'food', 'boss')`,
             [locationId]
         );
 
@@ -239,6 +239,15 @@ async function hasCollectedAllItems(playerId, locationId) {
     }
 }
 
+//boss check
+async function bossCheck(playerId, boss){
+    const bossName = await db.query(
+        `SELECT 1 FROM inventory WHERE player_id = $1 AND item_name = $2`,
+        [playerId, boss]
+    );
+    return bossName;
+}
+
 module.exports = { 
     db, 
     getPlayerId, 
@@ -250,5 +259,6 @@ module.exports = {
     getItemDetailsByType, 
     getLocationDetailsByID, 
     winChance, 
-    hasCollectedAllItems
+    hasCollectedAllItems, 
+    bossCheck
 };

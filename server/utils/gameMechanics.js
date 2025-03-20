@@ -1,4 +1,4 @@
-const { getPlayerId, getPlayerStats, updatePlayerStats, getItemDetailsByName, getItemDetailsByType, winChance, getItemDetailsByID, getLocationDetailsByID, hasCollectedAllItems } = require('./dbHelper');
+const { getPlayerId, getPlayerStats, updatePlayerStats, getItemDetailsByName, getItemDetailsByType, winChance, getItemDetailsByID, getLocationDetailsByID, hasCollectedAllItems, bossCheck } = require('./dbHelper');
 const { updateInventory, getInventory } = require('./inventoryManager');
 
 // ✅ Probability Calculation
@@ -22,6 +22,11 @@ async function skillAttempt(username, skillType, itemType) {
         if (!stats) return `❌ Player stats not found.`;
 
         if (!skillProbability(stats[skillType])) return `❌ You failed to find anything this time.`;
+
+        if (hasCollectedAllItems(playerId, stats.current_location)){
+            //boss fight - future functionality fight boss
+            console.log('future boss fight here');
+        }
 
         // ✅ Fetch an item by type & location
         const item = await getItemDetailsByType(playerId, itemType);
@@ -132,8 +137,10 @@ async function buyItem(username, itemName) {
 // ✅ Travel
 async function travelItem(username, locNumber) {
     try {
-        console.log('Basic Checks');
+        //change input into a number format
         locationNumber = Number(locNumber);
+
+        //check if valid player
         const playerId = await getPlayerId(username);
         if (!playerId) return `❌ You need to register first. Use !play to join the game.`;
 
@@ -142,14 +149,16 @@ async function travelItem(username, locNumber) {
             return `❌ Invalid location. Please enter a number between 1 and 13.`;
         }
         
+        //get current player stats
         const stats = await getPlayerStats(playerId);
         if (!stats) return `❌ Player stats not found.`;
 
+        const highest = stats.highest_location;
+        const current = await getLocationDetailsByID(stats.current_location);
+
+        //get new location data from table
         const location = await getLocationDetailsByID(locationNumber);
         if (!location) return `❌ Invalid location.`;
-
-        const highest = stats.highest_location;
-        const current = stats.current_location;
 
         // Case 1: If the new location is <= highest_location, allow travel without restrictions
         if (locationNumber <= highest) {
@@ -157,16 +166,16 @@ async function travelItem(username, locNumber) {
             return `✅ You have traveled to [ ${location.location_id} ] ${location.location_name}.`;
         }
         
-
         // Case 2: If the new location is greater than highest_location by 2 or more, block travel
         if (locationNumber > highest + 1) {
             return `❌ You must unlock locations in order.`;
         }
 
-        // Case 3: If traveling to the next location (current_location +1), enforce item collection and XP checks
-        if (locationNumber === current + 1) {
-            const collectedAll = await hasCollectedAllItems(playerId, current);
-            if (!collectedAll) return `❌ You haven't found all items in this location yet. Keep searching!`;
+        // Case 3: If traveling to the next location (current_location +1), CHECK IF THE BOSS HAS BEEN FOUGHT and XP checks
+        if (locationNumber === current.location_id + 1) {
+            const inventoryCheck = await bossCheck(playerId, current.boss);
+
+            if (!inventoryCheck.rows.length > 0) return `❌ You haven't found everything at this location yet. Keep searching!`;
 
             if (stats.xp_level < location.xp_threshold) {
                 return `❌ You need at least ${location.xp_threshold} XP to travel here.`;
@@ -175,13 +184,12 @@ async function travelItem(username, locNumber) {
 
         // ✅ Travel successful - Update location and possibly update highest_location
         await updatePlayerStats(playerId, { current_location: locationNumber });
-
         if (locationNumber >= stats.highest_location) {
             await updatePlayerStats(playerId, { highest_location: locationNumber });
         }
 
         // ✅ Placeholder for boss fight trigger
-        return `✅ You have traveled to [ ${location.location_id} ] ${location.location_name}. ⚔️ A boss battle awaits... (Feature coming soon!)`;
+        return `✅ You have traveled to [ ${location.location_id} ] ${location.location_name}.`;
 
     } catch (error) {
         console.error(`❌ Error processing travel command for ${username}:`, error);
