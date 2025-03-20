@@ -213,6 +213,36 @@ function winChance(fightLevel, enemyDifficulty) {
     }
 }
 
+// ✅ Check if player has collected all non-enemy items at a location
+async function hasCollectedAllItems(playerId, locationId) {
+    try {
+        // Fetch all non-enemy items for the location
+        const itemResult = await db.query(
+            `SELECT item_name FROM items 
+             WHERE item_location = $1 AND sub_type NOT IN ('enemy', 'food')`,
+            [locationId]
+        );
+
+        if (itemResult.rows.length === 0) return true; // No items to collect
+
+        const itemNames = itemResult.rows.map(row => row.item_name);
+
+        // Check if player has collected all these items
+        const inventoryResult = await db.query(
+            `SELECT COUNT(DISTINCT item_name) as collected_count 
+             FROM inventory WHERE player_id = $1 AND item_name = ANY($2)`,
+            [playerId, itemNames]
+        );
+        console.log('INVENTORY COUNT', inventoryResult.rows[0].collected_count);
+        console.log('ITEMS COUNT', itemNames.length);
+
+        return Number(inventoryResult.rows[0].collected_count) === itemNames.length;
+    } catch (error) {
+        console.error('❌ Error checking collected items:', error);
+        return false;
+    }
+}
+
 module.exports = { 
     db, 
     getPlayerId, 
@@ -223,5 +253,6 @@ module.exports = {
     getItemDetailsByID,
     getItemDetailsByType, 
     getLocationDetailsByID, 
-    winChance 
+    winChance, 
+    hasCollectedAllItems
 };

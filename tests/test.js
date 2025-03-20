@@ -5,7 +5,7 @@ const { getInventory, getItemLimit, updateInventory} = require('../server/utils/
 /*
 WORKING LOG
 1. Got 'Em = ❌NOT WORKING
-2. Play = ❌NOT WORKING
+2. Play = ✅NOT WORKING
 3. Eat = ✅ WOKRING
 4. Hunt = ✅ WORKING
 5. Talk = ❌NOT WORKING
@@ -70,13 +70,7 @@ WORKING LOG
 //         console.log('-- 14. Test selling item not in inventory');
 //         console.log(await sellItem('quietgamergirl', 'Apple')); // Expected: Error message
 
-//         console.log('🎯 16. Test successful travelItem(username, locationNumber)');
-//         console.log(await travelItem('quietgamergirl', '1')); //Stats updated
-
-//         console.log('-- 17. Test travel to place that doesnt exist');
-//         console.log(await travelItem('quietgamergirl', '500')); // Expected: Error message
-
-//         console.log('🎯 18. Test successful buyItem(username, itemName)');
+//         console.log('🎯 15. Test successful buyItem(username, itemName)');
 //         console.log(await buyItem('quietgamergirl', 'weapon oil')); // Expected: updates inventory
 
 //         console.log(' 19. Test successful eatItem(username, itemName)');
@@ -109,3 +103,18 @@ WORKING LOG
 //     console.log('🎯 25. Test successful fighting');
 //     console.log(await fightEnemy('quietgamergirl', 31) ); // Expected: minus health, updates inventory with XP
 // })();
+
+//TRAVEL TESTS
+(async () => {
+        // console.log('🎯 16. Test successful travelItem(username, locationNumber)');
+        // console.log(await travelItem('quietgamergirl', 1)); //Stats updated
+
+        console.log('25. Test successful travelItem(username, locationNumber)');
+        console.log(await travelItem('quietgamergirl', 2)); //Stats updated, items checked, boss fight ensues.
+
+        // console.log('-- 26. Test going to a place your havent unlocked travelItem(username, locationNumber)');
+        // console.log(await travelItem('quietgamergirl', 13)); //Stats updated, items checked, boss fight ensues.
+
+        // console.log('-- 17. Test travel to place that doesnt exist');
+        // console.log(await travelItem('quietgamergirl', 500)); // Expected: Error message
+})();

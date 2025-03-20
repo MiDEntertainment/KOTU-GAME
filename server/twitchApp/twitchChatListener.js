@@ -75,10 +75,10 @@ async function startTwitchChatListener() {
 
         listener.onChannelRedemptionAdd(clients.userId, async (e) => {
             try {
-                if (rewardTitle === "Got 'Em") return;
-
                 const rewardTitle = e.rewardTitle.toLowerCase();
                 const userInput = e.input?.trim();
+
+                if (rewardTitle === "Got 'Em") return;
         
                 let resultMessage = 'capturing';
         

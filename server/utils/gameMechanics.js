@@ -1,4 +1,4 @@
-const { getPlayerId, getPlayerStats, updatePlayerStats, getItemDetailsByName, getItemDetailsByType, winChance, getItemDetailsByID, getLocationDetailsByID } = require('./dbHelper');
+const { getPlayerId, getPlayerStats, updatePlayerStats, getItemDetailsByName, getItemDetailsByType, winChance, getItemDetailsByID, getLocationDetailsByID, hasCollectedAllItems } = require('./dbHelper');
 const { updateInventory, getInventory } = require('./inventoryManager');
 
 // ✅ Probability Calculation
@@ -132,21 +132,57 @@ async function buyItem(username, itemName) {
 // ✅ Travel
 async function travelItem(username, locationNumber) {
     try {
+        console.log('Basic Checks');
         const playerId = await getPlayerId(username);
         if (!playerId) return `❌ You need to register first. Use !play to join the game.`;
-
-        const stats = await getPlayerStats(playerId);
-        if (!stats) return `❌ Player stats not found.`;
 
         //Validate the input
         if (isNaN(locationNumber) || locationNumber < 1 || locationNumber > 13) {
             return `❌ Invalid location. Please enter a number between 1 and 13.`;
         }
+        
+        const stats = await getPlayerStats(playerId);
+        if (!stats) return `❌ Player stats not found.`;
 
-        // Update the player's current location
-        await updatePlayerStats(playerId, { current_location: locationNumber })
+        const location = await getLocationDetailsByID(locationNumber);
+        if (!location) return `❌ Invalid location.`;
 
-        return `✅ You have traveled to location ${locationNumber}!`;
+        const highest = stats.highest_location;
+        const current = stats.current_location;
+
+        // Case 1: If the new location is <= highest_location, allow travel without restrictions
+        if (locationNumber <= highest) {
+            console.log('New Location is less than highest location of', highest);
+            await updatePlayerStats(playerId, { current_location: locationNumber });
+            return `✅ You have traveled to [ ${location.location_id} ] ${location.location_name}.`;
+        }
+        
+
+        // Case 2: If the new location is greater than highest_location by 2 or more, block travel
+        if (locationNumber > highest + 1) {
+            return `❌ You must unlock locations in order.`;
+        }
+
+        // Case 3: If traveling to the next location (current_location +1), enforce item collection and XP checks
+        if (locationNumber === current + 1) {
+            const collectedAll = await hasCollectedAllItems(playerId, current);
+            if (!collectedAll) return `❌ You haven't found all items in this location yet. Keep searching!`;
+
+            if (stats.xp_level < location.xp_threshold) {
+                return `❌ You need at least ${location.xp_threshold} XP to travel here.`;
+            }
+        }
+
+        // ✅ Travel successful - Update location and possibly update highest_location
+        await updatePlayerStats(playerId, { current_location: locationNumber });
+
+        if (locationNumber > stats.highest_location) {
+            await updatePlayerStats(playerId, { highest_location: locationNumber });
+        }
+
+        // ✅ Placeholder for boss fight trigger
+        return `✅ You have traveled to [ ${location.location_id} ] ${location.location_name}. ⚔️ A boss battle awaits... (Feature coming soon!)`;
+
     } catch (error) {
         console.error(`❌ Error processing travel command for ${username}:`, error);
         return `❌ Error processing travel command: ${error.message}`;
